@@ -1,0 +1,14 @@
+---
+title: "Test 2"
+output: html_document
+---
+
+```{r}
+install.packages("ISLR")
+library(ISLR)
+library(ggplot2)
+data(Auto)
+head(Auto)
+ggplot(Auto, aes(x = cylinders, y = displacement)) + geom_point()
+```
+
