@@ -13,3 +13,7 @@ head(Auto)
 ggplot(Auto, aes(x = cylinders, y = displacement)) + geom_point()
 ```
 
+```{r}
+print("hello world")
+```
+
