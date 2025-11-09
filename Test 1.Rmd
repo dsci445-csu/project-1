@@ -4,8 +4,7 @@ output: html_document
 ---
 
 ```{r}
-usethis::use_git_config(user.name = "Leah Cordova", user.email = "leah.cordova@colostate.edu")
-install.packages("ISLR")
+
 library(ISLR)
 library(ggplot2)
 data(Auto)
@@ -23,5 +22,13 @@ dataset = print(student_depression_dataset)
 
 ```{r}
 print("Tanners first input")
+```
+
+```{r}
+library(readr)
+student_depression_dataset <- read_csv("student_depression_dataset.csv")
+```
+```{r}
+head(student_depression_dataset)
 ```
 
