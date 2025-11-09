@@ -17,6 +17,7 @@ ggplot(Auto, aes(x = cylinders, y = displacement)) + geom_point()
 print("hello world")
 
 print("hello from Munisa")
+print("Second commit by Munisa")
 ```
 
 ```{r}
