@@ -18,6 +18,7 @@ print("hello world")
 
 print("hello from Munisa")
 print("Second commit by Munisa")
+head(student_depression_dataset)
 ```
 
 ```{r}
