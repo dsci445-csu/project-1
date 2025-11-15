@@ -1,0 +1,27 @@
+---
+title: "Project 6"
+author: "Juliette Dashe"
+date: "2025-11-15"
+output: html_document
+---
+
+```{r}
+
+#Juliette's code
+```
+
+```{r}
+
+#Tanner's code
+```
+
+
+```{r}
+
+#Munisa's code
+```
+
+```{r}
+
+#Leah's code
+```
