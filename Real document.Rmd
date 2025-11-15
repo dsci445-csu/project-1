@@ -38,6 +38,14 @@ print(">>>")
 ```
 
 ```{r}
-
 #Leah's code
+
+library(readr)
+student_depression_dataset <- read_csv("student_depression_dataset.csv")
+View(student_depression_dataset)
+
+student_depression_dataset$id <- NULL
+student_depression_dataset$`Work Pressure` <- NULL
+student_depression_dataset$`Job Satisfaction` <- NULL
+student_depression_dataset$Profession <- NULL
 ```
