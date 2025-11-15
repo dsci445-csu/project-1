@@ -5,8 +5,7 @@ date: "2025-11-15"
 output: html_document
 ---
 ```{r}
-library(dplyr)
-library(stringr)
+
 
 student_depression_dataset$id <- NULL
 student_depression_dataset$`Work Pressure` <- NULL
@@ -16,7 +15,6 @@ student_depression_dataset$Profession <- NULL
 table(student_depression_dataset$Degree)
 
 names(student_depression_dataset)
-
 ```
 
 
