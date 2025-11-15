@@ -17,32 +17,6 @@ table(student_depression_dataset$Degree)
 
 names(student_depression_dataset)
 
-
-
-# Assuming your dataset is named 'df'
-academic_level_categorized <- student_depression_dataset |>
-  mutate(
-    Academic_Level = case_when(
-      # 1. PhD Level
-      str_detect(Degree, "PhD") ~ "PhD",
-      
-      # 2. Master's / Professional Level (Degrees starting with M or LLM/MD)
-      str_detect(Degree, "^M") | Degree %in% c("LLM", "MD") ~ "Master's/Professional",
-      
-      # 3. Bachelor's Level (Degrees starting with B or LLB/MBBS)
-      str_detect(Degree, "^B") | Degree %in% c("LLB", "MBBS") ~ "Bachelor's",
-      
-      # 4. High School Level
-      Degree == "Class 12" ~ "High School",
-      
-      # 5. Catch remaining (like "Others")
-      TRUE ~ "Other"
-    )
-  )
-
-# Verify the new categorization (Counts how many records fall into each new category)
-academic_level_categorized |>
-  count(Academic_Level, sort = TRUE)
 ```
 
 
