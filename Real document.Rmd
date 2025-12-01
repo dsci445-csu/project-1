@@ -27,8 +27,32 @@ print(">>>")
 ```
 
 ```{r}
-
 #Tanner's code
+
+library(readr)
+library(dplyr)
+
+df <- read_csv("student_depression_dataset.csv")
+
+df$id <- NULL
+df$Profession <- NULL
+df$'Work Pressure' <- NULL
+df$'Job Satisfaction' <- NULL
+
+df$Depression <- as.factor(df$Depression)
+
+df$Gender <- as.factor(df$Gender)
+df$City <- as.factor(df$City)
+df$'Sleep Duration' <- as.factor(df$'Sleep Duration')
+df$'Dietary Habits' <- as.factor(df$'Dietary Habits')
+df$Degree <- as.factor(df$Degree)
+df$'Have you ever had suicidal thoughts ?' <- as.factor(df$'Have you ever had suicidal thoughts ?')
+df$'Family History of Mental Illness' <- as.factor(df$'Family History of Mental Illness')
+
+str(df)
+```
+```{r}
+
 ```
 
 
