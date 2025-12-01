@@ -1,0 +1,34 @@
+---
+title: "Depression Prediction Project"
+subtitle: "DSCI 445 Final Project"
+author: "Juliette Dashe, Tanner Halopoff, Munisa Yaqub, Leah Cordova"
+date: "`r Sys.Date()`"
+output: 
+  ioslides_presentation:
+    widescreen: true
+    smaller: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+
+## Slide 1: Introduction
+
+This is where we type our text. We can use:
+
+* **Bold** for emphasis.
+* Bullet points for lists.
+
+We can just type whatever here that does not need to be bolded.
+
+## Slide 2: The Results - Tanner
+
+Stuff blah blah plus loading in graphs after downloading them
+
+## Slide 3: The Results - Munisa
+
+## Slide 4: The Results - Leah
+
+## Slide 5: Conclusion

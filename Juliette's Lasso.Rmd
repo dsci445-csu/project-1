@@ -1,0 +1,106 @@
+---
+title: "Juliette's document"
+author: "Juliette Dashe"
+date: "2025-11-29"
+output: html_document
+---
+```{r}
+#packages
+library(readr)
+library(dplyr)
+library(stringr)
+library(tidymodels)
+library(rsample)
+set.seed(445)
+```
+
+```{r}
+#data cleaning
+
+student_depression_dataset <- read_csv("student_depression_dataset.csv")
+
+student_depression_dataset$id <- NULL
+student_depression_dataset$`Work Pressure` <- NULL
+student_depression_dataset$`Job Satisfaction` <- NULL
+student_depression_dataset$Profession <- NULL
+
+df_clean <- student_depression_dataset |>
+  mutate(
+    # Making degrees into 5 categories 
+    Academic_Level = case_when(
+      # High School
+      Degree == "'Class 12'" ~ "High School",
+      
+      # Bachelor's Degrees (including B.Pharm, B.Tech, MBBS, etc.)
+      Degree %in% c("BE", "B.Arch", "BHM", "B.Com", "BSc", "B.Ed", "LLB", 
+                    "B.Pharm", "B.Tech", "BA", "BBA", "BCA") ~ "Bachelor's",
+      
+      # Master's Degrees/Professional Doctorates
+      Degree %in% c("MA", "MBA", "MBBS", "MCA", "LLM", "MD", "M.Com", 
+                    "ME", "M.Ed", "MHM", "M.Pharm", "MSc", "M.Tech", "MBBS") ~ "Master's",
+      
+      # PhD
+      Degree == "PhD" ~ "PhD",
+      
+      # Other/Unspecified
+      Degree == "Others" ~ "Other",
+      
+      # Catch-whatever else I might be missing 
+      TRUE ~ "Unknown"
+    ),
+    
+    # Convert the new column to an ordered factor for consistent analysis
+    Academic_Level = factor(Academic_Level, 
+                            levels = c("High School", "Bachelor's", "Master's", "PhD", "Other", "Unknown"))
+  )
+
+cat("Frequency of new Academic Levels:\n")
+df_clean |>
+  count(Academic_Level) |>
+  print()
+
+
+```
+
+```{r}
+#cross validation time 
+#first data split
+data_split <- initial_split(df_clean, prop = 0.6, strata = Depression)
+train_data <- training(data_split)
+test_data <- testing(data_split)
+
+#define recipe
+lasso_recipe <- recipe(Depression ~ ., data = train_data) |>
+  #convert factors and characters to binary columns
+  step_dummy(all_nominal_predictors()) |>
+  #removing zero variance columns
+  step_zv(all_predictors()) |>
+  #scale predictors
+  step_normalize(all_predictors())
+
+
+#model specification Lasso, mixture = 1
+lasso_spec <- logistic_reg(
+  penalty = tune(), #placeholder for penalty parameter
+  mixture  = 1
+) |>
+  set_mode("classification") |>
+  set_engine("glmnet")
+
+
+#10 fold CV Resamples
+data_folds <- vfold_cv(train_data, v = 10, strata = Depression)
+
+#define tuning grid
+lambda_grid <- grid_regular(penalty(), levels = 30)
+
+#workflow
+lasso_wf <- workflow() |>
+  add_model(lasso_spec) |>
+  add_recipe(lasso_recipe)
+
+
+
+```
+
+
