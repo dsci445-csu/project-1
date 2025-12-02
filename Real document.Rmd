@@ -48,12 +48,23 @@ df$'Dietary Habits' <- as.factor(df$'Dietary Habits')
 df$Degree <- as.factor(df$Degree)
 df$'Have you ever had suicidal thoughts ?' <- as.factor(df$'Have you ever had suicidal thoughts ?')
 df$'Family History of Mental Illness' <- as.factor(df$'Family History of Mental Illness')
-
-str(df)
 ```
 ```{r}
+library(tidymodels)
 
+set.seed(445)
+index <- sample(1:nrow(df), size = 0.8 * nrow(df))
+
+train <- df[index, ]
+test <- df[-index, ]
 ```
+```{r}
+knn_recipe <- recipe(Depression ~ ., data = train) %>%
+  step_dummy(all_nominal_predictors()) %>%
+  step_zv(all_predictors()) %>%
+  step_normalize(all_predictors)
+```
+
 
 
 ```{r}
