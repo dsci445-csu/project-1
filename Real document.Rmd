@@ -140,3 +140,39 @@ df_clean |>
   count(Academic_Level) |>
   print()
 ```
+
+```{r}
+#Leah's code 2
+
+#Plotting (not all useful but I tried all combos)
+head(df_clean)
+
+library(ggplot2)
+
+#Scatterplots - dbl vs dbl values
+#Age vs other predictors
+ggplot(data = df_clean, aes(x = `Age`, y = `Academic Pressure`)) + geom_point()
+ggplot(data = df_clean, aes(x = `Age`, y = `CGPA`)) + geom_point()
+ggplot(data = df_clean, aes(x = `Age`, y = `Study Satisfaction`)) + geom_point()
+ggplot(data = df_clean, aes(x = `Age`, y = `Work/Study Hours`)) + geom_point()
+ggplot(data = df_clean, aes(x = `Age`, y = `Financial Stress`)) + geom_point()
+
+#Academic Pressure vs other predictors
+ggplot(data = df_clean, aes(x = `Academic Pressure`, y = `CGPA`)) + geom_point()
+ggplot(data = df_clean, aes(x = `Academic Pressure`, y = `Study Satisfaction`)) + geom_point()
+ggplot(data = df_clean, aes(x = `Academic Pressure`, y = `Work/Study Hours`)) + geom_point()
+ggplot(data = df_clean, aes(x = `Academic Pressure`, y = `Financial Stress`)) + geom_point()
+
+#CGPA vs other predictors
+ggplot(data = df_clean, aes(x = `CGPA`, y = `Study Satisfaction`)) + geom_point()
+ggplot(data = df_clean, aes(x = `CGPA`, y = `Work/Study Hours`)) + geom_point()
+ggplot(data = df_clean, aes(x = `CGPA`, y = `Financial Stress`)) + geom_point()
+
+#Study Satisfaction vs other predictors
+ggplot(data = df_clean, aes(x = `Study Satisfaction`, y = `Work/Study Hours`)) + geom_point()
+ggplot(data = df_clean, aes(x = `Study Satisfaction`, y = `Financial Stress`)) + geom_point()
+
+#Work/Study Hours vs other predictors
+ggplot(data = df_clean, aes(x = `Work/Study Hours`, y = `Financial Stress`)) + geom_point()
+```
+
