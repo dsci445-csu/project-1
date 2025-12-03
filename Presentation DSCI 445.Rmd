@@ -16,6 +16,11 @@ knitr::opts_chunk$set(echo = FALSE)
 
 ## Slide 1: Introduction
 
+```{r, echo=FALSE, out.width="80%", fig.align='center'}
+knitr::include_graphics("Statistical Challenge.png")
+```
+
+
 This is where we type our text. We can use:
 
 * **Bold** for emphasis.
@@ -25,8 +30,14 @@ We can just type whatever here that does not need to be bolded.
 
 ## Slide 2: The Results - Tanner
 
-Stuff blah blah plus loading in graphs after downloading them
+* <span style="color: blue">**Type II (Glutton):**</span> Eats fast, gets full quickly.
+* <span style="color: red">**Type III (Learner):**</span> Slow start (learning), accelerates, then gets full.
 
+<br>
+
+**The Issue:** These biological behaviors look mathematically identical at high prey densities.
+
+**The Goal:** Distinguish the correct model using the fewest experiments possible.
 ## Slide 3: The Results - Munisa
 
 ## Slide 4: The Results - Leah
