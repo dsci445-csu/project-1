@@ -175,4 +175,18 @@ ggplot(data = df_clean, aes(x = `Study Satisfaction`, y = `Financial Stress`)) +
 #Work/Study Hours vs other predictors
 ggplot(data = df_clean, aes(x = `Work/Study Hours`, y = `Financial Stress`)) + geom_point()
 ```
+```{r}
+#Leah's code 3
+
+#Plotting
+head(df_clean)
+
+#Bar plots - chrs
+ggplot(data = df_clean, aes(x = `Gender`)) + geom_bar()
+ggplot(data = df_clean, aes(x = `City`)) + geom_bar()
+ggplot(data = df_clean, aes(x = `Sleep Duration`)) + geom_bar()
+ggplot(data = df_clean, aes(x = `Dietary Habits`)) + geom_bar()
+ggplot(data = df_clean, aes(x = `Have you ever had suicidal thoughts ?`)) + geom_bar()
+ggplot(data = df_clean, aes(x = `Academic_Level`)) + geom_bar()
+```
 
