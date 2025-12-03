@@ -86,8 +86,120 @@ knn_fit <- fit(knn_model, Depression ~ ., data = train_processed)
 
 ```{r}
 
-#Munisa's code
+##----------------------------Munisa's code-----------------------------------------
+
+df <- read.csv("student_depression_dataset.csv")
+
+knn_data <- df[ , c(
+  "Age",
+  "Academic.Pressure",
+  "Work.Pressure",
+  "CGPA",
+  "Study.Satisfaction",
+  "Job.Satisfaction",
+  "Work.Study.Hours",
+  "Financial.Stress",
+  "Depression"
+)]
+
+knn_data <- na.omit(knn_data)          # <<< NEW LINE
+knn_data$Depression <- as.factor(knn_data$Depression)
+
+## 1. Train / test split
+set.seed(123)
+n <- nrow(knn_data)
+train_idx <- sample(1:n, size = floor(0.7 * n))
+
+train <- knn_data[train_idx, ]
+test  <- knn_data[-train_idx, ]
+
+## 2. X and y
+predictor_cols <- c(
+  "Age",
+  "Academic.Pressure",
+  "Work.Pressure",
+  "CGPA",
+  "Study.Satisfaction",
+  "Job.Satisfaction",
+  "Work.Study.Hours",
+  "Financial.Stress"
+)
+
+X_train <- train[ , predictor_cols]
+X_test  <- test[ , predictor_cols]
+
+X_train <- data.frame(lapply(X_train, as.numeric))
+X_test  <- data.frame(lapply(X_test,  as.numeric))
+
+y_train <- train$Depression
+y_test  <- test$Depression
+
+train_complete <- complete.cases(X_train) & !is.na(y_train)
+test_complete  <- complete.cases(X_test)  & !is.na(y_test)
+
+X_train <- X_train[train_complete, ]
+y_train <- y_train[train_complete]
+
+X_test  <- X_test[test_complete, ]
+y_test  <- y_test[test_complete]
+
+## 3. Scale
+train_means <- apply(X_train, 2, mean, na.rm = TRUE)
+train_sds   <- apply(X_train, 2, sd,   na.rm = TRUE)
+
+X_train_scaled <- scale(X_train, center = train_means, scale = train_sds)
+X_test_scaled  <- scale(X_test,  center = train_means, scale = train_sds)
+
+## 4. KNN over several k
+library(class)
+
+k_values <- c(3, 5, 7, 9, 11, 15, 21)
+acc_vec <- numeric(length(k_values))
+
+set.seed(123)
+for (i in seq_along(k_values)) {
+  k <- k_values[i]
+  pred_k <- knn(
+    train = X_train_scaled,
+    test  = X_test_scaled,
+    cl    = y_train,
+    k     = k
+  )
+  tab_k <- table(Predicted = pred_k, Actual = y_test)
+  acc_vec[i] <- sum(diag(tab_k)) / sum(tab_k)
+}
+
+results <- data.frame(k = k_values, accuracy = acc_vec)
+print(results)
+
+best_idx <- which.max(acc_vec)
+best_k <- k_values[best_idx]
+best_k
+
+best_pred <- knn(
+  train = X_train_scaled,
+  test  = X_test_scaled,
+  cl    = y_train,
+  k     = best_k
+)
+
+best_tab <- table(Predicted = best_pred, Actual = y_test)
+best_tab
+best_accuracy <- sum(diag(best_tab)) / sum(best_tab)
+best_accuracy
+
+## 5. Plot
+plot(
+  k_values, acc_vec, type = "b",
+  xlab = "Number of Neighbors (k)",
+  ylab = "Test Accuracy",
+  main = "KNN Accuracy vs k for Student Depression"
+)
+
 ```
+
+
+
 
 ```{r}
 #Leah's code
