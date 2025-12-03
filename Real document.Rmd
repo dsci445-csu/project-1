@@ -62,7 +62,24 @@ test <- df[-index, ]
 knn_recipe <- recipe(Depression ~ ., data = train) %>%
   step_dummy(all_nominal_predictors()) %>%
   step_zv(all_predictors()) %>%
-  step_normalize(all_predictors)
+  step_normalize(all_predictors())
+```
+```{r}
+prep_recipe <- prep(knn_recipe)
+
+train_processed <- bake(prep_recipe, new_data = train)
+test_processed <- bake(prep_recipe, new_data = test)
+```
+```{r}
+knn_model <- nearest_neighbor(
+  neighbors = 5, 
+  weight_func = "rectangular"
+) %>% 
+  set_engine("kknn") %>%
+  set_mode("classification")
+```
+```{r}
+knn_fit <- fit(knn_model, Depression ~ ., data = train_processed)
 ```
 
 
