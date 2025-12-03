@@ -189,4 +189,51 @@ ggplot(data = df_clean, aes(x = `Dietary Habits`)) + geom_bar()
 ggplot(data = df_clean, aes(x = `Have you ever had suicidal thoughts ?`)) + geom_bar()
 ggplot(data = df_clean, aes(x = `Academic_Level`)) + geom_bar()
 ```
+```{r}
+#Leah's code 4
+
+#Plotting
+head(df_clean)
+
+#Boxplots - chr vs dbl
+#Gender vs other predictors
+ggplot(data = df_clean, aes(x = `Gender`, y = `Age`)) + geom_boxplot()
+ggplot(data = df_clean, aes(x = `Gender`, y = `Academic Pressure`)) + geom_boxplot()
+ggplot(data = df_clean, aes(x = `Gender`, y = `CGPA`)) + geom_boxplot()
+ggplot(data = df_clean, aes(x = `Gender`, y = `Study Satisfaction`)) + geom_boxplot()
+ggplot(data = df_clean, aes(x = `Gender`, y = `Work/Study Hours`)) + geom_boxplot()
+ggplot(data = df_clean, aes(x = `Gender`, y = `Financial Stress`)) + geom_boxplot()
+
+#Sleep Duration vs other predictors
+ggplot(data = df_clean, aes(x = `Sleep Duration`, y = `Age`)) + geom_boxplot()
+ggplot(data = df_clean, aes(x = `Sleep Duration`, y = `Academic Pressure`)) + geom_boxplot()
+ggplot(data = df_clean, aes(x = `Sleep Duration`, y = `CGPA`)) + geom_boxplot()
+ggplot(data = df_clean, aes(x = `Sleep Duration`, y = `Study Satisfaction`)) + geom_boxplot()
+ggplot(data = df_clean, aes(x = `Sleep Duration`, y = `Work/Study Hours`)) + geom_boxplot()
+ggplot(data = df_clean, aes(x = `Sleep Duration`, y = `Financial Stress`)) + geom_boxplot()
+
+#Dietary Habits vs other predictors
+ggplot(data = df_clean, aes(x = `Dietary Habits`, y = `Age`)) + geom_boxplot()
+ggplot(data = df_clean, aes(x = `Dietary Habits`, y = `Academic Pressure`)) + geom_boxplot()
+ggplot(data = df_clean, aes(x = `Dietary Habits`, y = `CGPA`)) + geom_boxplot()
+ggplot(data = df_clean, aes(x = `Dietary Habits`, y = `Study Satisfaction`)) + geom_boxplot()
+ggplot(data = df_clean, aes(x = `Dietary Habits`, y = `Work/Study Hours`)) + geom_boxplot()
+ggplot(data = df_clean, aes(x = `Dietary Habits`, y = `Financial Stress`)) + geom_boxplot()
+
+#Suicidal thoughts vs other predictors
+ggplot(data = df_clean, aes(x = `Have you ever had suicidal thoughts ?`, y = `Age`)) + geom_boxplot()
+ggplot(data = df_clean, aes(x = `Have you ever had suicidal thoughts ?`, y = `Academic Pressure`)) + geom_boxplot()
+ggplot(data = df_clean, aes(x = `Have you ever had suicidal thoughts ?`, y = `CGPA`)) + geom_boxplot()
+ggplot(data = df_clean, aes(x = `Have you ever had suicidal thoughts ?`, y = `Study Satisfaction`)) + geom_boxplot()
+ggplot(data = df_clean, aes(x = `Have you ever had suicidal thoughts ?`, y = `Work/Study Hours`)) + geom_boxplot()
+ggplot(data = df_clean, aes(x = `Have you ever had suicidal thoughts ?`, y = `Financial Stress`)) + geom_boxplot()
+
+#Family History of Mental Illness vs other predictors
+ggplot(data = df_clean, aes(x = `Family History of Mental Illness`, y = `Age`)) + geom_boxplot()
+ggplot(data = df_clean, aes(x = `Family History of Mental Illness`, y = `Academic Pressure`)) + geom_boxplot()
+ggplot(data = df_clean, aes(x = `Family History of Mental Illness`, y = `CGPA`)) + geom_boxplot()
+ggplot(data = df_clean, aes(x = `Family History of Mental Illness`, y = `Study Satisfaction`)) + geom_boxplot()
+ggplot(data = df_clean, aes(x = `Family History of Mental Illness`, y = `Work/Study Hours`)) + geom_boxplot()
+ggplot(data = df_clean, aes(x = `Family History of Mental Illness`, y = `Financial Stress`)) + geom_boxplot()
+```
 
