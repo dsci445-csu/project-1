@@ -236,4 +236,18 @@ ggplot(data = df_clean, aes(x = `Family History of Mental Illness`, y = `Study S
 ggplot(data = df_clean, aes(x = `Family History of Mental Illness`, y = `Work/Study Hours`)) + geom_boxplot()
 ggplot(data = df_clean, aes(x = `Family History of Mental Illness`, y = `Financial Stress`)) + geom_boxplot()
 ```
+```{r}
+#Leah's code 5
+
+#Plotting
+head(df_clean)
+
+#Histograms - dbls
+ggplot(data = df_clean, aes(x = `Age`)) + geom_histogram()
+ggplot(data = df_clean, aes(x = `Academic Pressure`)) + geom_histogram()
+ggplot(data = df_clean, aes(x = `CGPA`)) + geom_histogram()
+ggplot(data = df_clean, aes(x = `Study Satisfaction`)) + geom_histogram()
+ggplot(data = df_clean, aes(x = `Work/Study Hours`)) + geom_histogram()
+ggplot(data = df_clean, aes(x = `Financial Stress`)) + geom_histogram()
+```
 
