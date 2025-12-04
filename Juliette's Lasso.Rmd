@@ -6,6 +6,7 @@ output: html_document
 ---
 ```{r}
 #packages
+library(tune)
 library(readr)
 library(dplyr)
 library(stringr)
@@ -52,7 +53,8 @@ df_clean <- student_depression_dataset |>
     # Convert the new column to an ordered factor for consistent analysis
     Academic_Level = factor(Academic_Level, 
                             levels = c("High School", "Bachelor's", "Master's", "PhD", "Other", "Unknown"))
-  )
+  ) |>
+  select(-Degree)
 
 cat("Frequency of new Academic Levels:\n")
 df_clean |>
@@ -65,19 +67,31 @@ df_clean |>
 ```{r}
 #cross validation time 
 #first data split
-data_split <- initial_split(df_clean, prop = 0.6, strata = Depression)
+df_clean <- df_clean %>%
+  mutate(Depression = factor(Depression))
+data_split <- initial_split(df_clean, prop = 0.8, strata = Depression)
 train_data <- training(data_split)
 test_data <- testing(data_split)
 
-#define recipe
-lasso_recipe <- recipe(Depression ~ ., data = train_data) |>
-  #convert factors and characters to binary columns
-  step_dummy(all_nominal_predictors()) |>
-  #removing zero variance columns
-  step_zv(all_predictors()) |>
-  #scale predictors
-  step_normalize(all_predictors())
 
+
+#define recipe
+lasso_recipe <- recipe(Depression ~ ., Degree, data = train_data) |>
+  
+  # 1. Impute missing values for all numeric predictors (from previous fix)
+  step_impute_median(all_numeric_predictors()) |> 
+  
+  # 2. Handle 'novel' levels by grouping them 
+  step_novel(all_nominal_predictors()) |> 
+  
+  # 3. Convert factors and characters to binary columns
+  step_dummy(all_nominal_predictors()) |>
+  
+  # 4. Removing zero variance columns
+  step_zv(all_predictors()) |>
+  
+  # 5. Scale predictors
+  step_normalize(all_predictors())
 
 #model specification Lasso, mixture = 1
 lasso_spec <- logistic_reg(
@@ -99,8 +113,83 @@ lasso_wf <- workflow() |>
   add_model(lasso_spec) |>
   add_recipe(lasso_recipe)
 
+#results
+lasso_tuning_results <- tune_grid(
+  lasso_wf,
+  resample = data_folds,
+  grid = lambda_grid,
+  metrics = metric_set(roc_auc, accuracy, sens, spec),
+  control = control_grid(save_pred = TRUE)
+)
+```
 
+
+```{r}
+#results
+show_best(lasso_tuning_results, metric = "roc_auc")
+
+#now time to extract the optimal configuration and fit final model
+best_lasso_penalty <- select_best(lasso_tuning_results, metric = "roc_auc")
+
+# 2. Finalize the workflow by plugging the best penalty into the model specification
+final_lasso_wf <- finalize_workflow(lasso_wf, best_lasso_penalty)
+
+# 3. Fit the final model to the ENTIRE training set
+final_fit_results <- fit(final_lasso_wf, data = train_data)
+
+# 4. Display the non-zero coefficients of the final model 
+final_coefs <- tidy(final_fit_results) %>%
+  filter(term != "(Intercept)", estimate != 0)
+
+print(final_coefs)
 
 ```
+
+```{r}
+#plot
+
+library(ggplot2)
+library(tune)
+library(dplyr) # Required for the select() function below
+
+# 1. Extract the raw metric data from the tuning results
+# This creates a standard data frame (tibble) that is easy to manipulate.
+plot_data <- collect_metrics(lasso_tuning_results) %>%
+  filter(.metric == "roc_auc") %>%
+  # Ensure penalty is logarithmic for plotting scale
+  mutate(log_penalty = log(penalty))
+
+# 2. Extract the optimal penalty value for highlighting
+best_penalty_log <- log(select_best(lasso_tuning_results, metric = "roc_auc")$penalty)
+
+
+# 3. Create the plot using ggplot2 (Robust Method)
+final_tuning_plot <- ggplot(plot_data, aes(x = log_penalty, y = mean)) +
+  geom_line(color = "#1F78B4") +
+  geom_point(color = "#1F78B4") +
+  
+  # Highlight the optimal penalty chosen by CV
+  geom_vline(xintercept = best_penalty_log, linetype = "dashed", color = "red", linewidth = 1) +
+  
+  # Add labels and theme
+  labs(
+    title = "Lasso Logistic Regression Tuning: ROC AUC vs. Penalty",
+    subtitle = paste("Optimal Penalty (lambda):", round(exp(best_penalty_log), 5)),
+    x = expression(Log(lambda)), # Uses LaTeX for lambda symbol
+    y = "Mean ROC AUC"
+  ) +
+  theme_minimal(base_size = 14)
+
+# 4. Display the plot
+final_tuning_plot
+```
+
+
+```{r}
+
+```
+
+
+
 
 

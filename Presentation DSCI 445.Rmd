@@ -16,12 +16,16 @@ knitr::opts_chunk$set(echo = FALSE)
 
 ## Slide 1: Introduction
 
+* Data set: 
+
+
+
 ```{r, echo=FALSE, out.width="80%", fig.align='center'}
 knitr::include_graphics("Statistical Challenge.png")
 ```
 
-
 This is where we type our text. We can use:
+
 
 * **Bold** for emphasis.
 * Bullet points for lists.
@@ -38,7 +42,20 @@ We can just type whatever here that does not need to be bolded.
 **The Issue:** These biological behaviors look mathematically identical at high prey densities.
 
 **The Goal:** Distinguish the correct model using the fewest experiments possible.
+
 ## Slide 3: The Results - Munisa
+
+
+## Juliette Lasso
+
+* 
+
+Why Lasso: Addressing Overfitting and Difficult Interpretation with Logistic Regression 
+due to many large number of predictors
+
+```{r, echo=FALSE, out.width="80%", fig.align='center'}
+knitr::include_graphics("images/Lasso Image.png")
+```
 
 ## Slide 4: The Results - Leah
 
