@@ -29,93 +29,51 @@ print(">>>")
 ```{r}
 #Tanner's code
 
-library(readr)
 library(dplyr)
-library(tidymodels)
-library(ggplot2)
+library(randomForest)
 
-df <- read_csv("student_depression_dataset.csv", show_col_types = FALSE)
+df <- read.csv("student_depression_dataset.csv")
 
-df <- df %>% select(-id, -Profession, -`Work Pressure`, -`Job Satisfaction`)
+rf_data <- df[, c(
+  "Age",
+  "Academic.Pressure",
+  "Work.Pressure",
+  "CGPA",
+  "Study.Satisfaction",
+  "Job.Satisfaction",
+  "Work.Study.Hours",
+  "Financial.Stress",
+  "Depression"
+)]
 
-df$Depression <- as.factor(df$Depression)
+rf_data <- na.omit(rf_data)
 
-factor_cols <- c(
-  "Gender", "City", "Sleep Duration", "Dietary Habits",
-  "Degree", "Have you ever had suicidal thoughts ?",
-  "Family History of Mental Illness"
-)
+rf_data$Depression <- as.factor(rf_data$Depression)
 
-for (col in factor_cols) {
-  df[[col]] <- as.factor(df[[col]])
-}
-
-df <- df %>% na.omit()
-
-set.seed(445)
-n <- nrow(df)
+set.seed(123)
+n <- nrow(rf_data)
 train_idx <- sample(1:n, size = floor(0.8 * n))
-train <- df[train_idx, ]
-test  <- df[-train_idx, ]
+train <- rf_data[train_idx, ]
+test  <- rf_data[-train_idx, ]
 
-for (col in factor_cols) {
-  test[[col]] <- factor(test[[col]], levels = levels(train[[col]]))
-}
-
-knn_recipe <- recipe(Depression ~ ., data = train) %>%
-  step_dummy(all_nominal_predictors()) %>%  
-  step_zv(all_predictors()) %>%         
-  step_normalize(all_predictors())        
-
-set.seed(445)
-cv_folds <- vfold_cv(train, v = 5)
-
-knn_model <- nearest_neighbor(
-  neighbors = tune(),
-  weight_func = "rectangular"
-) %>%
-  set_engine("kknn") %>%
-  set_mode("classification")
-
-knn_wf <- workflow() %>%
-  add_recipe(knn_recipe) %>%
-  add_model(knn_model)
-
-k_grid <- tibble(neighbors = seq(1, 27, by = 2))
-
-tuned <- tune_grid(
-  knn_wf,
-  resamples = cv_folds,
-  grid = k_grid,
-  metrics = metric_set(accuracy)
+set.seed(123)
+rf_model <- randomForest(
+  Depression ~ ., 
+  data = train,
+  ntree = 500,   
+  mtry = 3,      
+  importance = TRUE
 )
 
-show_best(tuned, metric = "accuracy")
-best_params <- select_best(tuned, "accuracy")
+rf_pred <- predict(rf_model, newdata = test)
 
-final_wf <- finalize_workflow(knn_wf, best_params)
-final_fit <- fit(final_wf, data = train)
+rf_tab <- table(Predicted = rf_pred, Actual = test$Depression)
+print(rf_tab)
 
-predictions <- predict(final_fit, new_data = test) %>%
-  bind_cols(test)
+rf_accuracy <- sum(diag(rf_tab)) / sum(rf_tab)
+cat("Test set accuracy:", rf_accuracy, "\n")
 
-metrics <- predictions %>% metrics(truth = Depression, estimate = .pred_class)
-conf_mat <- predictions %>% conf_mat(truth = Depression, estimate = .pred_class)
-
-metrics
-conf_mat
-
-cv_results <- tuned %>% collect_metrics()
-cv_results %>%
-  filter(.metric == "accuracy") %>%
-  ggplot(aes(x = neighbors, y = mean)) +
-  geom_line() +
-  geom_point() +
-  labs(
-    title = "KNN Cross-Validated Accuracy vs k",
-    x = "Number of Neighbors (k)",
-    y = "Accuracy"
-  )
+varImpPlot(rf_model, main = "Variable Importance (Random Forest)")
 ```
 
 
