@@ -78,7 +78,7 @@ test_data <- testing(data_split)
 #define recipe
 lasso_recipe <- recipe(Depression ~ ., Degree, data = train_data) |>
   
-  # 1. Impute missing values for all numeric predictors (from previous fix)
+  # 1. Impute missing values for all numeric predictors 
   step_impute_median(all_numeric_predictors()) |> 
   
   # 2. Handle 'novel' levels by grouping them 
@@ -102,8 +102,8 @@ lasso_spec <- logistic_reg(
   set_engine("glmnet")
 
 
-#10 fold CV Resamples
-data_folds <- vfold_cv(train_data, v = 10, strata = Depression)
+#5 fold CV Resamples
+data_folds <- vfold_cv(train_data, v = 5, strata = Depression)
 
 #define tuning grid
 lambda_grid <- grid_regular(penalty(), levels = 30)
@@ -143,6 +143,22 @@ final_coefs <- tidy(final_fit_results) %>%
 
 print(final_coefs)
 
+##finding out how many predictors there are after dummy encoding
+# 1. Prepare the recipe: Calculate all means, medians, and identify all category levels.
+final_prepared_recipe <- prep(lasso_recipe, training = train_data)
+
+# 2. Bake the recipe: Apply all the steps (imputation, dummy creation, scaling) 
+#    to the training data to create the final design matrix.
+final_design_matrix <- bake(final_prepared_recipe, new_data = train_data, 
+                            all_predictors())
+
+# 3. Count the columns: The number of columns is the exact number of predictors (P)
+#    your Lasso model sees.
+total_predictors_verified <- ncol(final_design_matrix)
+
+cat("## Verified Total Predictors (P) in Final Design Matrix:\n")
+cat(total_predictors_verified, "predictors")
+
 ```
 
 ```{r}
@@ -150,7 +166,7 @@ print(final_coefs)
 
 library(ggplot2)
 library(tune)
-library(dplyr) # Required for the select() function below
+library(dplyr)
 
 # 1. Extract the raw metric data from the tuning results
 # This creates a standard data frame (tibble) that is easy to manipulate.
@@ -186,7 +202,22 @@ final_tuning_plot
 
 
 ```{r}
+final_coefs_tidy <- tidy(final_fit_results) %>%
+  dplyr::filter(term != "(Intercept)", abs(estimate) > 1e-10)
+# 1. Calculate the number of relevant features (non-zero coefficients)
+relevant_features <- nrow(final_coefs_tidy)
 
+# 2. Total predictors the model saw (The P after dummy encoding)
+# We use the previously calculated estimate of ~72 total features.
+total_predictors <- 68
+
+# 3. Calculate the number of features set to zero (Dropped)
+dropped_features <- total_predictors - relevant_features
+
+cat("## Lasso Model Sparsity Calculation\n")
+cat("-----------------------------------\n")
+cat("A. Features Retained (Non-Zero Coefficients): ", relevant_features, "\n")
+cat("B. Features Dropped (Set to Zero): ", dropped_features, "\n")
 ```
 
 

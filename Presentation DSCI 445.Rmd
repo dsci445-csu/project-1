@@ -1,12 +1,11 @@
 ---
-title: "Depression Prediction Project"
+title: "Depression Classification Project"
 subtitle: "DSCI 445 Final Project"
 author: "Juliette Dashe, Tanner Halopoff, Munisa Yaqub, Leah Cordova"
 date: "`r Sys.Date()`"
 output: 
   ioslides_presentation:
     widescreen: true
-    smaller: true
 ---
 
 ```{r setup, include=FALSE}
@@ -14,23 +13,39 @@ knitr::opts_chunk$set(echo = FALSE)
 ```
 
 
-## Slide 1: Introduction
+## How Well Can We Classify Student Depression?
 
-* Data set: 
+* <span style="color: blue"> **Data Set** </span>
 
+Student Depression Dataset
 
+* <span style="color: blue">**Data**</span>
 
-```{r, echo=FALSE, out.width="80%", fig.align='center'}
-knitr::include_graphics("Statistical Challenge.png")
-```
-
-This is where we type our text. We can use:
+Almost 28,000 student records with various academic, financial, and lifestyle predictors
 
 
-* **Bold** for emphasis.
-* Bullet points for lists.
+* <span style="color: blue">**Goal**</span>
 
-We can just type whatever here that does not need to be bolded.
+Classify student depression risk with high accuracy and interpretability 
+
+* <span style="color: blue">**Methods Used** </span>
+
+Logistic Regression, K Nearest Neighbors, Lasso and Random Forest
+
+## Specificities
+
+**Categories:**
+
+* Gender, Age, City, Academic Pressure, CGPA, Study Satisfaction, Sleep Duration, Dietary Habits, Academic Level, Have You Ever Had Suicidal Thoughts?, Financial Stress, Family History of Mental Illness, and **Depression**
+
+* 13 Categories
+
+* Removed ID, Profession, Work Pressure and Job Satisfaction
+
+
+## Descriptive Graphs
+
+
 
 ## Slide 2: The Results - Tanner
 
@@ -48,14 +63,42 @@ We can just type whatever here that does not need to be bolded.
 
 ## Juliette Lasso
 
-* 
+**Why Lasso:** 
 
-Why Lasso: Addressing Overfitting and Difficult Interpretation with Logistic Regression 
-due to many large number of predictors
+Addressing overfitting and difficult interpretation, essentially logistic regression with an added L1 regularization penalty, due to high dimensionality
+
+##
+**The How**
+
+* Transformed all categorical features into numeric dummy variables
+* Standardized all numeric predictors so Lasso penalty will treat them equally
+* Performed 5-fold CV to tune the penalty parameter, lambda, across 30 levels
+
+```{r, echo=FALSE, out.width="40%", fig.align='center'}
+knitr::include_graphics("images/recipe.png")
+```
+
+##
+**The Result**
+
+* Chose the lambda value ($\lambda$) .00174 based on the **Receiver Operating Characteristic Area Under the Curve (ROC AUC)**, which yielded a peak CV performance of around 92%.
+
+* Model set **28 coefficients to 0** and resulted in a sparser final model with 
+**40 relevant features.**
+
+* Some takeaways: For every standard deviation increase in Academic Pressure, the odds of a student experiencing depression increase by over $\mathbf{200\%}$ (a factor of $3.06$).
+
+* For every one standard deviation increase in Study Satisfaction, the odds of experiencing depression decrease by about $27\%$. 
+
+
+## Nice Graph!
 
 ```{r, echo=FALSE, out.width="80%", fig.align='center'}
 knitr::include_graphics("images/Lasso Image.png")
 ```
+
+
+
 
 ## Slide 4: The Results - Leah
 

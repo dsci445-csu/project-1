@@ -1,1 +1,85 @@
 rmd read me 
+
+---
+title: "Depression Classification Project"
+subtitle: "DSCI 445 Final Project"
+author: "Juliette Dashe, Tanner Halopoff, Munisa Yaqub, Leah Cordova"
+date: "`r Sys.Date()`"
+output: 
+  ioslides_presentation:
+    widescreen: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+
+## How Well Can We Classify Student Depression?
+
+* <span style="color: blue"> **Data Set** </span>
+
+Student Depression Dataset
+
+* <span style="color: blue">**Data**</span>
+
+Almost 28,000 student records with various academic, financial, and lifestyle predictors
+
+
+* <span style="color: blue">**Goal**</span>
+
+Classify student depression risk with high accuracy and interpretability 
+
+* <span style="color: blue">**Methods Used** </span>
+
+Logistic Regression, K Nearest Neighbors, Lasso and Random Forest
+
+## Specificities
+
+**Categories:**
+
+* Gender, Age, City, Academic Pressure, CGPA, Study Satisfaction, Sleep Duration, Dietary Habits, Academic Level, Have You Ever Had Suicidal Thoughts?, Financial Stress, Family History of Mental Illness, and **Depression**
+
+* 13 Categories
+
+* Removed ID, Profession, Work Pressure and Job Satisfaction
+
+
+
+## Slide 2: The Results - Tanner
+
+* <span style="color: blue">**Type II (Glutton):**</span> Eats fast, gets full quickly.
+* <span style="color: red">**Type III (Learner):**</span> Slow start (learning), accelerates, then gets full.
+
+<br>
+
+**The Issue:** These biological behaviors look mathematically identical at high prey densities.
+
+**The Goal:** Distinguish the correct model using the fewest experiments possible.
+
+## Slide 3: The Results - Munisa
+
+
+## Juliette Lasso
+
+**Why Lasso:** 
+Addressing Overfitting and Difficult Interpretation with Logistic Regression 
+due to many large number of predictors
+
+**The How**
+* Transformed all categorical features into numeric dummy variables
+* Standardized all numeric predictors so Lasso penalty will treat them equally
+* Performed 5-fold CV to tune the penalty parameter, lambda. 
+
+**The Result**
+* Chose the lambda value .00174 
+
+
+
+```{r, echo=FALSE, out.width="80%", fig.align='center'}
+knitr::include_graphics("images/Lasso Image.png")
+```
+
+## Slide 4: The Results - Leah
+
+## Slide 5: Conclusion
