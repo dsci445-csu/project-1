@@ -48,8 +48,7 @@ df$'Dietary Habits' <- as.factor(df$'Dietary Habits')
 df$Degree <- as.factor(df$Degree)
 df$'Have you ever had suicidal thoughts ?' <- as.factor(df$'Have you ever had suicidal thoughts ?')
 df$'Family History of Mental Illness' <- as.factor(df$'Family History of Mental Illness')
-```
-```{r}
+
 library(tidymodels)
 
 set.seed(445)
@@ -57,30 +56,41 @@ index <- sample(1:nrow(df), size = 0.8 * nrow(df))
 
 train <- df[index, ]
 test <- df[-index, ]
-```
-```{r}
+
 knn_recipe <- recipe(Depression ~ ., data = train) %>%
   step_dummy(all_nominal_predictors()) %>%
   step_zv(all_predictors()) %>%
   step_normalize(all_predictors())
-```
-```{r}
-prep_recipe <- prep(knn_recipe)
 
-train_processed <- bake(prep_recipe, new_data = train)
-test_processed <- bake(prep_recipe, new_data = test)
-```
-```{r}
+set.seed(445)
+crossValidation_folds <- vfold_cv(train, v = 5)
+
 knn_model <- nearest_neighbor(
-  neighbors = 5, 
+  neighbors = tune(),
   weight_func = "rectangular"
-) %>% 
+) %>%
   set_engine("kknn") %>%
   set_mode("classification")
+
+knn_workflow <- workflow() %>% 
+  add_recipe(knn_recipe) %>%
+  add_model(knn_model)
+
+k_grid <- tibble(neighbors = seq(1, 27, by = 2))
+
+tuned <- tune_grid(
+  knn_workflow,
+  resamples = crossValidation_folds,
+  grid = k_grid,
+  metrics = metric_set(accuracy)
+)
+
+
+
+
+
 ```
-```{r}
-knn_fit <- fit(knn_model, Depression ~ ., data = train_processed)
-```
+
 
 
 
