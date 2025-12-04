@@ -31,39 +31,44 @@ print(">>>")
 
 library(readr)
 library(dplyr)
+library(tidymodels)
+library(ggplot2)
 
-df <- read_csv("student_depression_dataset.csv")
+df <- read_csv("student_depression_dataset.csv", show_col_types = FALSE)
 
-df$id <- NULL
-df$Profession <- NULL
-df$'Work Pressure' <- NULL
-df$'Job Satisfaction' <- NULL
+df <- df %>% select(-id, -Profession, -`Work Pressure`, -`Job Satisfaction`)
 
 df$Depression <- as.factor(df$Depression)
 
-df$Gender <- as.factor(df$Gender)
-df$City <- as.factor(df$City)
-df$'Sleep Duration' <- as.factor(df$'Sleep Duration')
-df$'Dietary Habits' <- as.factor(df$'Dietary Habits')
-df$Degree <- as.factor(df$Degree)
-df$'Have you ever had suicidal thoughts ?' <- as.factor(df$'Have you ever had suicidal thoughts ?')
-df$'Family History of Mental Illness' <- as.factor(df$'Family History of Mental Illness')
+factor_cols <- c(
+  "Gender", "City", "Sleep Duration", "Dietary Habits",
+  "Degree", "Have you ever had suicidal thoughts ?",
+  "Family History of Mental Illness"
+)
 
-library(tidymodels)
+for (col in factor_cols) {
+  df[[col]] <- as.factor(df[[col]])
+}
+
+df <- df %>% na.omit()
 
 set.seed(445)
-index <- sample(1:nrow(df), size = 0.8 * nrow(df))
+n <- nrow(df)
+train_idx <- sample(1:n, size = floor(0.8 * n))
+train <- df[train_idx, ]
+test  <- df[-train_idx, ]
 
-train <- df[index, ]
-test <- df[-index, ]
+for (col in factor_cols) {
+  test[[col]] <- factor(test[[col]], levels = levels(train[[col]]))
+}
 
 knn_recipe <- recipe(Depression ~ ., data = train) %>%
-  step_dummy(all_nominal_predictors()) %>%
-  step_zv(all_predictors()) %>%
-  step_normalize(all_predictors())
+  step_dummy(all_nominal_predictors()) %>%  
+  step_zv(all_predictors()) %>%         
+  step_normalize(all_predictors())        
 
 set.seed(445)
-crossValidation_folds <- vfold_cv(train, v = 5)
+cv_folds <- vfold_cv(train, v = 5)
 
 knn_model <- nearest_neighbor(
   neighbors = tune(),
@@ -72,25 +77,46 @@ knn_model <- nearest_neighbor(
   set_engine("kknn") %>%
   set_mode("classification")
 
-knn_workflow <- workflow() %>% 
+knn_wf <- workflow() %>%
   add_recipe(knn_recipe) %>%
   add_model(knn_model)
 
 k_grid <- tibble(neighbors = seq(1, 27, by = 2))
 
 tuned <- tune_grid(
-  knn_workflow,
-  resamples = crossValidation_folds,
+  knn_wf,
+  resamples = cv_folds,
   grid = k_grid,
   metrics = metric_set(accuracy)
 )
 
+show_best(tuned, metric = "accuracy")
+best_params <- select_best(tuned, "accuracy")
 
+final_wf <- finalize_workflow(knn_wf, best_params)
+final_fit <- fit(final_wf, data = train)
 
+predictions <- predict(final_fit, new_data = test) %>%
+  bind_cols(test)
 
+metrics <- predictions %>% metrics(truth = Depression, estimate = .pred_class)
+conf_mat <- predictions %>% conf_mat(truth = Depression, estimate = .pred_class)
 
+metrics
+conf_mat
+
+cv_results <- tuned %>% collect_metrics()
+cv_results %>%
+  filter(.metric == "accuracy") %>%
+  ggplot(aes(x = neighbors, y = mean)) +
+  geom_line() +
+  geom_point() +
+  labs(
+    title = "KNN Cross-Validated Accuracy vs k",
+    x = "Number of Neighbors (k)",
+    y = "Accuracy"
+  )
 ```
-
 
 
 
