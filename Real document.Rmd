@@ -383,9 +383,9 @@ df_clean$City <- factor(df_clean$City)
 
 for (i in 1:5) {
   #Splitting training and testing data
-  test_indexes <- folds[[i]]
-  train <- df_clean[-test_indexes, ]
-  test  <- df_clean[test_indexes, ]
+  test_indexes <- sample(1:nrow(df_clean), 0.8 * nrow(df_clean))
+  train <- df_clean[test_indexes, ]
+  test  <- df_clean[-test_indexes, ]
 
   #Fixing missing values in Financial Stress
   test <- test %>% drop_na(`Financial Stress`)
