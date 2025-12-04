@@ -50,13 +50,13 @@ rf_data <- na.omit(rf_data)
 
 rf_data$Depression <- as.factor(rf_data$Depression)
 
-set.seed(123)
+set.seed(445)
 n <- nrow(rf_data)
-train_idx <- sample(1:n, size = floor(0.8 * n))
+train_idx <- sample(1:n, size = floor(0.7 * n))
 train <- rf_data[train_idx, ]
 test  <- rf_data[-train_idx, ]
 
-set.seed(123)
+set.seed(445)
 rf_model <- randomForest(
   Depression ~ ., 
   data = train,
