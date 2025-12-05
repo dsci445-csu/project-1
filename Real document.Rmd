@@ -50,13 +50,13 @@ rf_data <- na.omit(rf_data)
 
 rf_data$Depression <- as.factor(rf_data$Depression)
 
-set.seed(445)
+set.seed(123)
 n <- nrow(rf_data)
-train_idx <- sample(1:n, size = floor(0.7 * n))
+train_idx <- sample(1:n, size = floor(0.8 * n))
 train <- rf_data[train_idx, ]
 test  <- rf_data[-train_idx, ]
 
-set.seed(445)
+set.seed(123)
 rf_model <- randomForest(
   Depression ~ ., 
   data = train,
@@ -81,33 +81,11 @@ varImpPlot(rf_model, main = "Variable Importance (Random Forest)")
 ```{r}
 
 ##----------------------------Munisa's code-----------------------------------------
+##----------------------------KNN with numeric values only-----------------------------------------
 
-df <- read.csv("student_depression_dataset.csv")
+library(class)
 
-knn_data <- df[ , c(
-  "Age",
-  "Academic.Pressure",
-  "Work.Pressure",
-  "CGPA",
-  "Study.Satisfaction",
-  "Job.Satisfaction",
-  "Work.Study.Hours",
-  "Financial.Stress",
-  "Depression"
-)]
-
-knn_data <- na.omit(knn_data)          # <<< NEW LINE
-knn_data$Depression <- as.factor(knn_data$Depression)
-
-## 1. Train / test split
-set.seed(123)
-n <- nrow(knn_data)
-train_idx <- sample(1:n, size = floor(0.7 * n))
-
-train <- knn_data[train_idx, ]
-test  <- knn_data[-train_idx, ]
-
-## 2. X and y
+# 1. Predictor columns
 predictor_cols <- c(
   "Age",
   "Academic.Pressure",
@@ -119,56 +97,97 @@ predictor_cols <- c(
   "Financial.Stress"
 )
 
-X_train <- train[ , predictor_cols]
-X_test  <- test[ , predictor_cols]
+# 2. Build KNN train/test from rf_data and train_idx
+knn_train <- rf_data[train_idx, ]
+knn_test  <- rf_data[-train_idx, ]
 
-X_train <- data.frame(lapply(X_train, as.numeric))
-X_test  <- data.frame(lapply(X_test,  as.numeric))
+X_train <- knn_train[, predictor_cols]
+X_test  <- knn_test[, predictor_cols]
 
-y_train <- train$Depression
-y_test  <- test$Depression
+# Ensure all predictors are numeric 
+X_train <- data.frame(lapply(X_train, function(z) as.numeric(as.character(z))))
+X_test  <- data.frame(lapply(X_test,  function(z) as.numeric(as.character(z))))
 
+y_train <- knn_train$Depression
+y_test  <- knn_test$Depression
+
+# 3. Drop any rows with NA in predictors or response
 train_complete <- complete.cases(X_train) & !is.na(y_train)
 test_complete  <- complete.cases(X_test)  & !is.na(y_test)
 
-X_train <- X_train[train_complete, ]
+X_train <- X_train[train_complete, , drop = FALSE]
 y_train <- y_train[train_complete]
 
-X_test  <- X_test[test_complete, ]
+X_test  <- X_test[test_complete, , drop = FALSE]
 y_test  <- y_test[test_complete]
 
-## 3. Scale
-train_means <- apply(X_train, 2, mean, na.rm = TRUE)
-train_sds   <- apply(X_train, 2, sd,   na.rm = TRUE)
+# 4. 5-fold cross-validation on TRAIN set to choose between k = 5 and k = 10
+set.seed(123)
+
+n_train <- nrow(X_train)
+K_folds <- 5
+
+fold_id <- sample(rep(1:K_folds, length.out = n_train))
+
+k_values <- c(5, 10)   
+cv_acc <- numeric(length(k_values))
+
+for (j in seq_along(k_values)) {
+  k <- k_values[j]
+  fold_acc <- numeric(K_folds)
+  
+  for (f in 1:K_folds) {
+    val_idx <- which(fold_id == f)
+    tr_idx  <- setdiff(1:n_train, val_idx)
+    
+    X_tr_f <- X_train[tr_idx, , drop = FALSE]
+    X_val_f <- X_train[val_idx, , drop = FALSE]
+    y_tr_f <- y_train[tr_idx]
+    y_val_f <- y_train[val_idx]
+    
+    # Scale predictors using only the training part of this fold
+    means_f <- apply(X_tr_f, 2, mean)
+    sds_f   <- apply(X_tr_f, 2, sd)
+    
+    X_tr_f_sc  <- scale(X_tr_f,  center = means_f, scale = sds_f)
+    X_val_f_sc <- scale(X_val_f, center = means_f, scale = sds_f)
+    
+    # KNN on this fold
+    pred_val <- knn(
+      train = X_tr_f_sc,
+      test  = X_val_f_sc,
+      cl    = y_tr_f,
+      k     = k
+    )
+    
+    tab_val <- table(Predicted = pred_val, Actual = y_val_f)
+    fold_acc[f] <- sum(diag(tab_val)) / sum(tab_val)
+  }
+  
+  cv_acc[j] <- mean(fold_acc)
+}
+
+# 5. CV results and best k (5 or 10)
+knn_cv_results <- data.frame(
+  k = k_values,
+  cv_accuracy = cv_acc
+)
+knn_cv_results   # small table for your report
+
+best_idx <- which.max(cv_acc)
+best_k <- k_values[best_idx]
+best_k
+
+best_cv_accuracy <- cv_acc[best_idx]
+best_cv_accuracy
+
+# 6. Fit final KNN on FULL TRAIN set with best k and evaluate on TEST set
+
+train_means <- apply(X_train, 2, mean)
+train_sds   <- apply(X_train, 2, sd)
 
 X_train_scaled <- scale(X_train, center = train_means, scale = train_sds)
 X_test_scaled  <- scale(X_test,  center = train_means, scale = train_sds)
-
-## 4. KNN over several k
-library(class)
-
-k_values <- c(3, 5, 7, 9, 11, 15, 21)
-acc_vec <- numeric(length(k_values))
-
-set.seed(123)
-for (i in seq_along(k_values)) {
-  k <- k_values[i]
-  pred_k <- knn(
-    train = X_train_scaled,
-    test  = X_test_scaled,
-    cl    = y_train,
-    k     = k
-  )
-  tab_k <- table(Predicted = pred_k, Actual = y_test)
-  acc_vec[i] <- sum(diag(tab_k)) / sum(tab_k)
-}
-
-results <- data.frame(k = k_values, accuracy = acc_vec)
-print(results)
-
-best_idx <- which.max(acc_vec)
-best_k <- k_values[best_idx]
-best_k
 
 best_pred <- knn(
   train = X_train_scaled,
@@ -179,19 +198,169 @@ best_pred <- knn(
 
 best_tab <- table(Predicted = best_pred, Actual = y_test)
 best_tab
-best_accuracy <- sum(diag(best_tab)) / sum(best_tab)
-best_accuracy
 
-## 5. Plot
+best_test_accuracy <- sum(diag(best_tab)) / sum(best_tab)
+best_test_accuracy
+
+# 7. Plot: 5-fold CV accuracy for k = 5 and 10
 plot(
-  k_values, acc_vec, type = "b",
+  k_values, cv_acc, type = "b",
   xlab = "Number of Neighbors (k)",
-  ylab = "Test Accuracy",
-  main = "KNN Accuracy vs k for Student Depression"
+  ylab = "5-fold CV Accuracy",
+  main = "KNN 5-fold CV Accuracy (k = 5 vs 10)"
 )
 
 ```
 
+```{r}
+
+##----------------------------Munisa's KNN with numeric + categorical-----------------------------------------
+
+library(class)
+
+# 0. Read full data (again, separate from rf_data)
+df_all <- read.csv("student_depression_dataset.csv")
+
+# 1. Select numeric + categorical predictors + response
+knn2_data <- df_all[, c(
+  "Age",
+  "Academic.Pressure",
+  "Work.Pressure",
+  "CGPA",
+  "Study.Satisfaction",
+  "Job.Satisfaction",
+  "Work.Study.Hours",
+  "Financial.Stress",
+  "Gender",
+  "Sleep.Duration",
+  "Dietary.Habits",
+  "Have.you.ever.had.suicidal.thoughts..",
+  "Family.History.of.Mental.Illness",
+  "Depression"
+)]
+
+# 2. Drop rows with any NA
+knn2_data <- na.omit(knn2_data)
+
+# 3. Mark categorical predictors and response as factors
+knn2_data$Gender <- as.factor(knn2_data$Gender)
+knn2_data$Sleep.Duration <- as.factor(knn2_data$Sleep.Duration)
+knn2_data$Dietary.Habits <- as.factor(knn2_data$Dietary.Habits)
+knn2_data$Have.you.ever.had.suicidal.thoughts.. <- as.factor(knn2_data$Have.you.ever.had.suicidal.thoughts..)
+knn2_data$Family.History.of.Mental.Illness <- as.factor(knn2_data$Family.History.of.Mental.Illness)
+knn2_data$Depression <- as.factor(knn2_data$Depression)
+
+# 4. Create dummy variables for categoricals using model.matrix
+X_full <- model.matrix(Depression ~ ., data = knn2_data)[, -1]  # drop intercept
+y_full <- knn2_data$Depression
+
+# 5. Train/test split (80/20)
+set.seed(123)
+n2 <- nrow(X_full)
+train_idx2 <- sample(1:n2, size = floor(0.8 * n2))
+
+X2_train <- X_full[train_idx2, , drop = FALSE]
+X2_test  <- X_full[-train_idx2, , drop = FALSE]
+y2_train <- y_full[train_idx2]
+y2_test  <- y_full[-train_idx2]
+
+# Safety: ensure no NAs remain
+train_ok <- complete.cases(X2_train) & !is.na(y2_train)
+test_ok  <- complete.cases(X2_test)  & !is.na(y2_test)
+
+X2_train <- X2_train[train_ok, , drop = FALSE]
+y2_train <- y2_train[train_ok]
+
+X2_test  <- X2_test[test_ok, , drop = FALSE]
+y2_test  <- y2_test[test_ok]
+
+# 6. 5-fold CV to compare k = 5 vs k = 10
+set.seed(123)
+n_train2 <- nrow(X2_train)
+K_folds <- 5
+fold_id2 <- sample(rep(1:K_folds, length.out = n_train2))
+
+k_values2 <- c(5, 10)
+cv_acc2 <- numeric(length(k_values2))
+
+for (j in seq_along(k_values2)) {
+  k <- k_values2[j]
+  fold_acc <- numeric(K_folds)
+  
+  for (f in 1:K_folds) {
+    val_idx <- which(fold_id2 == f)
+    tr_idx  <- setdiff(1:n_train2, val_idx)
+    
+    X_tr_f <- X2_train[tr_idx, , drop = FALSE]
+    X_val_f <- X2_train[val_idx, , drop = FALSE]
+    y_tr_f <- y2_train[tr_idx]
+    y_val_f <- y2_train[val_idx]
+    
+    # Scale within each fold
+    means_f <- apply(X_tr_f, 2, mean)
+    sds_f   <- apply(X_tr_f, 2, sd)
+    
+    X_tr_f_sc  <- scale(X_tr_f,  center = means_f, scale = sds_f)
+    X_val_f_sc <- scale(X_val_f, center = means_f, scale = sds_f)
+    
+    pred_val <- knn(
+      train = X_tr_f_sc,
+      test  = X_val_f_sc,
+      cl    = y_tr_f,
+      k     = k
+    )
+    
+    tab_val <- table(Predicted = pred_val, Actual = y_val_f)
+    fold_acc[f] <- sum(diag(tab_val)) / sum(tab_val)
+  }
+  
+  cv_acc2[j] <- mean(fold_acc)
+}
+
+# 7. CV results and best k (5 vs 10)
+knn2_cv_results <- data.frame(
+  k = k_values2,
+  cv_accuracy = cv_acc2
+)
+knn2_cv_results
+
+best_idx2 <- which.max(cv_acc2)
+best_k2 <- k_values2[best_idx2]
+best_k2
+
+best_cv_accuracy2 <- cv_acc2[best_idx2]
+best_cv_accuracy2
+
+# 8. Final KNN with numeric + categorical on full train, evaluate on test
+
+train_means2 <- apply(X2_train, 2, mean)
+train_sds2   <- apply(X2_train, 2, sd)
+
+X2_train_sc <- scale(X2_train, center = train_means2, scale = train_sds2)
+X2_test_sc  <- scale(X2_test,  center = train_means2, scale = train_sds2)
+
+best_pred2 <- knn(
+  train = X2_train_sc,
+  test  = X2_test_sc,
+  cl    = y2_train,
+  k     = best_k2
+)
+
+best_tab2 <- table(Predicted = best_pred2, Actual = y2_test)
+best_tab2
+
+best_test_accuracy2 <- sum(diag(best_tab2)) / sum(best_tab2)
+best_test_accuracy2
+
+# 9. Simple barplot: CV accuracy for k = 5 vs 10
+barplot(
+  cv_acc2, names.arg = k_values2,
+  xlab = "Number of Neighbors (k)",
+  ylab = "5-fold CV Accuracy",
+  main = "KNN with numeric + categorical (k = 5 vs 10)"
+)
+
+```
 
 
 
@@ -359,29 +528,25 @@ ggplot(data = df_clean, aes(x = `Financial Stress`)) + geom_histogram()
 ```{r}
 #Leah's code 6
 
-#Logistic Regression
+#Logistic regression
 
 library(tidyverse)
-library(caret)
-library(dplyr)
-library(forcats)
-
-set.seed(445)
-
-#Resolving issue with city
+#Getting data ready to use glm()
 df_clean <- df_clean %>%
   mutate(across(where(is.character), as.factor))
-df_clean <- df_clean %>%
-  mutate(City = fct_lump(City, n = 10))
+df_clean$City <- fct_lump(df_clean$City, n = 10)
 
-#Creating folds for cross validation
-folds <- createFolds(df_clean$Depression, k = 5, list = TRUE)
+#Splitting training and testing data
+training_index <- sample(1:nrow(df_clean), 0.8 * nrow(df_clean))
+train <- df_clean[training_index, ]
+test  <- df_clean[-training_index, ]
+
 
 accuracy_matrix <- matrix(NA, nrow = 5, ncol = 16)
 
 df_clean$City <- factor(df_clean$City)
 
-for (i in 1:5) {
+for (i in 1:5) 
   #Splitting training and testing data
   training_index <- sample(1:nrow(df_clean), 0.8 * nrow(df_clean))
   train <- df_clean[training_index, ]
@@ -423,19 +588,132 @@ for (i in 1:5) {
     pred <- ifelse(prob > 0.5, 1, 0)
     accuracy_matrix[i, m] <- mean(pred == test$Depression, na.rm = TRUE)
   }
+  
+factor_cols <- names(Filter(is.factor, train))
+for (col in factor_cols) {
+  test[[col]] <- factor(test[[col]], levels = levels(train[[col]]))
 }
 
-#Computing average accuracy for comparison
-fold_cv_results <- colMeans(accuracy_matrix, na.rm = TRUE)
+test <- test %>% drop_na(`Financial Stress`)
 
-results_df <- data.frame(
-  Model = paste0("Model ", 1:16),
-  Predictors = 1:16,
-  Accuracy = fold_cv_results
-)
+#Model 1
+model1 <- glm(Depression ~ `Gender`, data = train, family = 'binomial')
+probability1 <- predict(model1, test, type = 'response')
+prediction1 <- ifelse(probability1 > 0.5, 1, 0)
+actual_class1 <- mean(prediction1 == test$Depression)
+actual_class1
 
-#Put it in a table
-kable(results_df, caption = "5 Fold Cross Validation Results for Logistic Regression Models")
+#Model 2
+model2 <- glm(Depression ~ `Gender` + `Age`, data = train, family = 'binomial')
+probability2 <- predict(model2, test, type = 'response')
+prediction2 <- ifelse(probability2 > 0.5, 1, 0)
+actual_class2 <- mean(prediction2 == test$Depression)
+actual_class2
 
+#Model 3
+model3 <- glm(Depression ~ `Gender` + `Age` + `City`, data = train, family = 'binomial')
+probability3 <- predict(model3, test, type = 'response')
+prediction3 <- ifelse(probability3 > 0.5, 1, 0)
+actual_class3 <- mean(prediction3 == test$Depression)
+actual_class3
+
+#Model 4
+model4 <- glm(Depression ~ `Gender` + `Age` + `City` + `Academic Pressure`, data = train, family = 'binomial')
+probability4 <- predict(model4, test, type = 'response')
+prediction4 <- ifelse(probability4 > 0.5, 1, 0)
+actual_class4 <- mean(prediction4 == test$Depression)
+actual_class4
+
+#Model 5
+model5 <- glm(Depression ~ `Gender` + `Age` + `City` + `Academic Pressure` + `CGPA`, data = train, family = 'binomial')
+probability5 <- predict(model5, test, type = 'response')
+prediction5 <- ifelse(probability5 > 0.5, 1, 0)
+actual_class5 <- mean(prediction5 == test$Depression)
+actual_class5
+
+#Model 6
+model6 <- glm(Depression ~ `Gender` + `Age` + `City` + `Academic Pressure` + `CGPA` + `Study Satisfaction`, data = train, family = 'binomial')
+probability6 <- predict(model6, test, type = 'response')
+prediction6 <- ifelse(probability6 > 0.5, 1, 0)
+actual_class6 <- mean(prediction6 == test$Depression)
+actual_class6
+
+#Model 7
+model7 <- glm(Depression ~ `Gender` + `Age` + `City` + `Academic Pressure` + `CGPA` + `Study Satisfaction` + `Sleep Duration`, data = train, family = 'binomial')
+probability7 <- predict(model7, test, type = 'response')
+prediction7 <- ifelse(probability7 > 0.5, 1, 0)
+actual_class7 <- mean(prediction7 == test$Depression)
+actual_class7
+
+#Model 8
+model8 <- glm(Depression ~ `Gender` + `Age` + `City` + `Academic Pressure` + `CGPA` + `Study Satisfaction` + `Sleep Duration` + `Dietary Habits`, data = train, family = 'binomial')
+probability8 <- predict(model8, test, type = 'response')
+prediction8 <- ifelse(probability8 > 0.5, 1, 0)
+actual_class8 <- mean(prediction8 == test$Depression)
+actual_class8
+
+#Model 9
+model9 <- glm(Depression ~ `Gender` + `Age` + `City` + `Academic Pressure` + `CGPA` + `Study Satisfaction` + `Sleep Duration` + `Dietary Habits` + `Have you ever had suicidal thoughts ?`, data = train, family = 'binomial')
+probability9 <- predict(model9, test, type = 'response')
+prediction9 <- ifelse(probability9 > 0.5, 1, 0)
+actual_class9 <- mean(prediction9 == test$Depression)
+actual_class9
+
+#Model 10
+model10 <- glm(Depression ~ `Gender` + `Age` + `City` + `Academic Pressure` + `CGPA` + `Study Satisfaction` + `Sleep Duration` + `Dietary Habits` + `Have you ever had suicidal thoughts ?` + `Work/Study Hours`, data = train, family = 'binomial')
+probability10 <- predict(model10, test, type = 'response')
+prediction10 <- ifelse(probability10 > 0.5, 1, 0)
+actual_class10 <- mean(prediction10 == test$Depression)
+actual_class10
+
+#Model 11
+model11 <- glm(Depression ~ `Gender` + `Age` + `City` + `Academic Pressure` + `CGPA` + `Study Satisfaction` + `Sleep Duration` + `Dietary Habits` + `Have you ever had suicidal thoughts ?` + `Work/Study Hours` + `Financial Stress`, data = train, family = 'binomial')
+probability11 <- predict(model11, test, type = 'response')
+prediction11 <- ifelse(probability11 > 0.5, 1, 0)
+actual_class11 <- mean(prediction11 == test$Depression)
+actual_class11
+
+#Model 12
+model12 <- glm(Depression ~ `Gender` + `Age` + `City` + `Academic Pressure` + `CGPA` + `Study Satisfaction` + `Sleep Duration` + `Dietary Habits` + `Have you ever had suicidal thoughts ?` + `Work/Study Hours` + `Financial Stress` + `Family History of Mental Illness`, data = train, family = 'binomial')
+probability12 <- predict(model12, test, type = 'response')
+prediction12 <- ifelse(probability12 > 0.5, 1, 0)
+actual_class12 <- mean(prediction12 == test$Depression)
+actual_class12
+
+#Model 13
+model13 <- glm(Depression ~ `Gender` + `Age` + `City` + `Academic Pressure` + `CGPA` + `Study Satisfaction` + `Sleep Duration` + `Dietary Habits` + `Have you ever had suicidal thoughts ?` + `Work/Study Hours` + `Financial Stress` + `Family History of Mental Illness` + `Academic_Level`, data = train, family = 'binomial')
+probability13 <- predict(model13, test, type = 'response')
+prediction13 <- ifelse(probability13 > 0.5, 1, 0)
+actual_class13 <- mean(prediction13 == test$Depression)
+actual_class13
+
+#Model 14 with interaction 1
+model14 <- glm(Depression ~ `Gender` + `Age` + `City` + `Academic Pressure` + `CGPA` + `Study Satisfaction` + `Sleep Duration` + `Dietary Habits` + `Have you ever had suicidal thoughts ?` + `Work/Study Hours` + `Financial Stress` + `Family History of Mental Illness` + `Academic_Level` + `Academic Pressure`*`Academic_Level`, data = train, family = 'binomial')
+probability14 <- predict(model14, test, type = 'response')
+prediction14 <- ifelse(probability14 > 0.5, 1, 0)
+actual_class14 <- mean(prediction14 == test$Depression)
+actual_class14
+
+#Model 15 with interaction 2
+model15 <- glm(Depression ~ `Gender` + `Age` + `City` + `Academic Pressure` + `CGPA` + `Study Satisfaction` + `Sleep Duration` + `Dietary Habits` + `Have you ever had suicidal thoughts ?` + `Work/Study Hours` + `Financial Stress` + `Family History of Mental Illness` + `Academic_Level` + `Sleep Duration`*`Work/Study Hours`, data = train, family = 'binomial')
+probability15 <- predict(model15, test, type = 'response')
+prediction15 <- ifelse(probability15 > 0.5, 1, 0)
+actual_class15 <- mean(prediction15 == test$Depression)
+actual_class15
+
+#Model 16 with interaction 3
+model16 <- glm(Depression ~ `Gender` + `Age` + `City` + `Academic Pressure` + `CGPA` + `Study Satisfaction` + `Sleep Duration` + `Dietary Habits` + `Have you ever had suicidal thoughts ?` + `Work/Study Hours` + `Financial Stress` + `Family History of Mental Illness` + `Academic_Level` + `Family History of Mental Illness`*`Have you ever had suicidal thoughts ?`, data = train, family = 'binomial')
+probability16 <- predict(model16, test, type = 'response')
+prediction16 <- ifelse(probability16 > 0.5, 1, 0)
+actual_class16 <- mean(prediction16 == test$Depression)
+actual_class16
+
+#Comparing results of cross-validation
+library(knitr)
+
+results_vector <- c(actual_class1, actual_class2, actual_class3, actual_class4, actual_class5, actual_class6, actual_class7, actual_class8, actual_class9, actual_class10, actual_class11, actual_class12, actual_class13, actual_class14, actual_class15, actual_class16)
+number_predictors <- c(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16)
+results_df <- data.frame(Model = paste0("Model", 1:16), Predictors = number_predictors, Accuracy = results_vector)
+kable(results_df, caption = "Comparing Logistic Models")
 ```
 
