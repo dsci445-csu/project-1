@@ -29,7 +29,14 @@ A large part of random forest is also to see the importance of the variables and
 
 # Motivation
 
-motivation
+#Leah Motivation
+Initially, our project idea was to predict whether a startup would turn into a Unicorn (valued at $1 billion or more). When trying to source data for this, we ran into a bit of an obstacle finding data with the predictors we thought would be relevant to prediction. When a research paper author did not respond, we figured we should probably find an alternate project idea.
+
+After discussing more, we landed on the idea of healthcare/well-being. We discussed predicting Depression in students, and found a Kaggle dataset with predictors such as Academic Pressure, Level of Degree being pursued, Cumulative GPA, Age, Sleep and Eating habits, etc. We thought, as students, this would be an interesting thing to try to predict and compare models.
+
+We went ahead and assigned Plotting and Logistic Regression to me, K-nearest neighbors to Munisa, Random Forest to Tanner, and Lasso to Juliette to begin the project.
+#End Leah Motivation
+
 
 # Methodology
 ## KNN
@@ -46,9 +53,29 @@ For K-nearest neighbors we first used only the numeric predictors (Age, Academic
 
 Then we repeated KNN after adding categorical predictors (for example gender, sleep duration, dietary habits, suicidal thoughts, family history) and turning them into dummy 0/1 variables. The 5-fold CV accuracies for k = 5 and k = 10 were very similar to the numeric-only model, with only a small change in accuracy. This suggests that adding the categorical variables did not dramatically improve KNN performance for this dataset, and most of the signal is already captured by the numeric predictors.
 
+#Leah Methodology
+We started as a group and did a bit of data cleaning, removing columns of predictors that didn't have any data and were all zeros. These included things like student ID, Work Pressure, and Job Pressure.
+Juliette went ahead and did some further data cleaning for us, separating individual degrees into categories of High school, Undergraduate, Masters, and PhD. I went ahead and put her cleaning into my code block in order to use the cleaned data.
+
+Following this, my first step was to begin with some plotting. I looked through the clean data and identified which predictors were doubles, characters, and binary. Using this, I first created scatter plots using predictors that were both doubles against each other. I then moved on to bar plots for character categories, and did one for each predictor whose values were characters. Then, I did boxplots to compare character and double predictors. There were a lot of these, and I was able to visually compare relationships between these predictors from some of the plots generated. Lastly, for plotting, I went ahead and did some histograms of the predictors who were doubles to see distributions between categories within these individual predictors. There were a lot of graphs produced, as I basically did every combination I could think of just to exhaust examining relationships between predictors before I fit any models. A lot of them were not useful, such as the scatter plots between predictors who had small ranges, like Financial Stress vs Work Hours - the graph just appeared as a matrix where there was no was to differentiate individual data points from one another. Another example of a non-useful plot was Financial Stress vs Family History of Mental Illness - similar to before, since the range of these were simply 1-5 plotted against Yes/No, nothing could really been seen in terms of relationships. However, many graphs were useful, such as Financial Stress vs Have you ever had suicidal thoughts - stress levels were much higher in those that had answered Yes. Another group of useful graphs were the bar plots to see how many of each of the character predictors were in each group - majority said Yes to suicidal thoughts, most were pursuing a Bachelor's degree, majority of students were men, etc. In addition, in a similar way, the histograms of double predictors allowed me to see that most students were under 35 years old, work/study hours leaned more towards 8+ hours, and the most common level of financial stress was a 5 out of 5.
+
+I then went on to Logistic Regression. I started by making the character predictors into factors for use in the model. I started out initially writing the code for each model, starting with one predictor and slowly adding more. I know this was not the best method, so I may go back and try to more accurately add predictors that I think would actually have a significant impact on the prediction. I then did models with interaction terms - 3 more to be exact. I did this intuitively with what predictors I thought could use interaction terms together, so, again, I may go back and do this in a more formal way to get the most significant interaction terms. I fit all the models using glm().
+
+For my cross validation, the group decided that we all needed to do the same type, and we landed on 5 fold cross validation. This is not what I had initially done, so I went and changed my code to match this format for accurate comparison of our models. Because I was going to use a for loop for this CV, I went ahead and revised my initial code, which was long and individually coding each model, into a for loop format. I made a list for each of the predictors I wanted to add in each model, then looped through each of these in addition to performing the 5 fold cross validation within the loop. This shortened my code significantly and made it easier to conceptualize. 
+#End Leah Methodology
+
 # Results
 # graphs to the moon and back, advised to download any graphs made and 
 # link them here instead of doing any coding 
+
+#Leah Results
+I stored the results of the cross validation, comparing the predicted outcome of depression in the training data to the actual outcome of depression in the test data, in a matrix. I put this matrix into a data frame of its own, listing the model number, the number of predictors used in that model, and then the accuracy (as a decimal) of comparing the predictions to the actual outcome. I put this data frame into a table to compare my numerous logistic regression models to one another.
+
+Overall, the logistic model which performed the best was the one that contained all predictors and no interaction terms. Its accuracy in terms of correct predictions was 0.84791. The second best was the model with all predictors plus an interaction term between "Family History of Mental Illness" and "Have you ever had suicidal thoughts ?". Its accuracy was 0.84784. Lastly, the third best model was the model with all predictors plus an interaction term between "Sleep Duration" and "Work/Study Hours". Its accuracy was 0.84780. These were all extremely close together, so choosing the shortest model with no interaction terms makes sense as the best logistic model.
+
+Like previously mentioned, I think I could go back through and better determine which exact predictors to use in my various models, and perhaps increase the accuracy levels I have at the moment. Overall, though, I think the logistic model and 5 fold cross validation process is solid and just needs minor tweaks.
+#End Leah Results
+
 
 # References
 Adil Shamim, Student Depression Dataset, kaggle.com
