@@ -43,6 +43,11 @@ rf_data <- df[, c(
   "Job.Satisfaction",
   "Work.Study.Hours",
   "Financial.Stress",
+  "Gender",
+  "Sleep.Duration",
+  "Dietary.Habits",
+  "Have.you.ever.had.suicidal.thoughts..",
+  "Family.History.of.Mental.Illness",
   "Depression"
 )]
 
@@ -83,7 +88,7 @@ library(caret)
 
 df <- read.csv("student_depression_dataset.csv")
 
-rf_data <- df[, c(
+rf_data <- df_all[, c(
   "Age",
   "Academic.Pressure",
   "Work.Pressure",
@@ -92,6 +97,11 @@ rf_data <- df[, c(
   "Job.Satisfaction",
   "Work.Study.Hours",
   "Financial.Stress",
+  "Gender",
+  "Sleep.Duration",
+  "Dietary.Habits",
+  "Have.you.ever.had.suicidal.thoughts..",
+  "Family.History.of.Mental.Illness",
   "Depression"
 )]
 
