@@ -22,8 +22,19 @@ library(ggplot2)
 motivation
 
 # Methodology
-## part one
-asdf
+## KNN
+
+```{r, echo=FALSE, out.width="80%", fig.align='center'}
+knitr::include_graphics("images/KNN_numeric_Categorical.png")
+```
+```{r, echo=FALSE, out.width="80%", fig.align='center'}
+knitr::include_graphics("images/KNN_numeric.png")
+```
+We included K-nearest neighbors because it is a simple, non-parametric classification method that does not assume a linear relationship between the predictors and Depression. KNN predicts a student’s depression status by looking at the k most similar students in the training data (based on age, academic pressure, sleep, stress, etc.) and using a majority vote. This “similar students → similar outcome” idea is very natural for our problem and provides a useful baseline to compare with logistic regression, lasso, and random forest.
+
+For K-nearest neighbors we first used only the numeric predictors (Age, Academic Pressure, Work Pressure, CGPA, Study Satisfaction, Job Satisfaction, Work/Study Hours, Financial Stress). Using 5-fold cross-validation, the CV accuracy was about 0.76 for k = 5 and 0.77 for k = 10, so we chose k = 10 as our main KNN model.
+
+Then we repeated KNN after adding categorical predictors (for example gender, sleep duration, dietary habits, suicidal thoughts, family history) and turning them into dummy 0/1 variables. The 5-fold CV accuracies for k = 5 and k = 10 were very similar to the numeric-only model, with only a small change in accuracy. This suggests that adding the categorical variables did not dramatically improve KNN performance for this dataset, and most of the signal is already captured by the numeric predictors.
 
 # Results
 # graphs to the moon and back, advised to download any graphs made and 
