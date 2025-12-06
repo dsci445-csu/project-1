@@ -15,6 +15,16 @@ knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE, fig.align 
 library(ggplot2)
 
 ```
+RF
+So far after doing some base set up and coding, like loading in my packages which were the randomForest and dplyr, we all begin cleaning the data which had some similarities and also caused us to branch off at certain points because certain models required their own niche cleaning and set up. I just made sure that all invalid rows were removed and everything was set up as a factor if applicable.
+
+Then after setting the seed and partitioning the dat it was time to set up the random forest model itself. I did some research and looked at notes before coming to the conclusion that 500 trees would be the best because it is difficult to over fit with this model, yet with runtimes being extensive, 500 is a sweet spot.
+
+5 fold cross validation was taking a lot of time to run and I am still dialing it in along with the relevant plots. 
+
+What I have done with the training and test split is obtain the accuracy of my prediction based on the one split that I did. This resulted in 83.3% success in predicting an individual's factor of depressed or not. 
+
+A large part of random forest is also to see the importance of the variables and we can run just a couple of tweaks to get a mean decrease in prediction accuracy when a variable is removed and therefore we see home large of a contributor to success it was. Next I will do this with 5 fold cross validation to see some more certainty and repetition.
 
 
 # Motivation
