@@ -88,7 +88,7 @@ library(caret)
 
 df <- read.csv("student_depression_dataset.csv")
 
-rf_data <- df_all[, c(
+rf_data <- df[, c(
   "Age",
   "Academic.Pressure",
   "Work.Pressure",
