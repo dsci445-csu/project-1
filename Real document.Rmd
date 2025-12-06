@@ -50,13 +50,13 @@ rf_data <- na.omit(rf_data)
 
 rf_data$Depression <- as.factor(rf_data$Depression)
 
-set.seed(123)
+set.seed(445)
 n <- nrow(rf_data)
-train_idx <- sample(1:n, size = floor(0.8 * n))
+train_idx <- sample(1:n, size = floor(0.7 * n))
 train <- rf_data[train_idx, ]
 test  <- rf_data[-train_idx, ]
 
-set.seed(123)
+set.seed(445)
 rf_model <- randomForest(
   Depression ~ ., 
   data = train,
@@ -74,6 +74,55 @@ rf_accuracy <- sum(diag(rf_tab)) / sum(rf_tab)
 cat("Test set accuracy:", rf_accuracy, "\n")
 
 varImpPlot(rf_model, main = "Variable Importance (Random Forest)")
+```
+
+```{r}
+library(dplyr)
+library(randomForest)
+library(caret)
+
+df <- read.csv("student_depression_dataset.csv")
+
+rf_data <- df[, c(
+  "Age",
+  "Academic.Pressure",
+  "Work.Pressure",
+  "CGPA",
+  "Study.Satisfaction",
+  "Job.Satisfaction",
+  "Work.Study.Hours",
+  "Financial.Stress",
+  "Depression"
+)]
+
+rf_data <- na.omit(rf_data)
+
+rf_data$Depression <- as.factor(rf_data$Depression)
+
+train_control <- trainControl(
+  method = "cv",
+  number = 5,
+  verboseIter = TRUE
+)
+set.seed(445)
+
+rf_cv_model <- train(
+  Depression ~ .,
+  data = rf_data,
+  method = "rf",
+  trControl = train_control,
+  metric = "Accuracy",   
+  tuneGrid = expand.grid(
+    mtry = 3:6           
+  ),
+  ntree = 500
+)
+
+print(rf_cv_model)
+plot(rf_cv_model)
+
+varImp(rf_cv_model)
+plot(varImp(rf_cv_model))
 ```
 
 
