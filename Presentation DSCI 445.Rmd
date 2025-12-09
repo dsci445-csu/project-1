@@ -58,7 +58,7 @@ Logistic Regression, K Nearest Neighbors, Lasso and Random Forest
   - Most students were under the age of 35, identified as men, and were pursuing undergraduate degrees
   
 ```{r}
-knitr::include_graphics("LeahPlotting.png")
+knitr::include_graphics("images/LeahPlotting.png")
 ```
 
 
@@ -93,7 +93,7 @@ knitr::include_graphics("LeahPlotting.png")
   - Best performing model was one with no interactions, and although adding they came close in terms of accuracy, they did not improve it much.
   
 ```{r}
-knitr::include_graphics("LeahResults.png")
+knitr::include_graphics("images/LeahResults.png")
 ```
 
 
