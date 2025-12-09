@@ -63,7 +63,87 @@ Key Takeaways
 
 
 
-## Slide 3: The Results - Munisa
+## K-nearest neighbours
+
+**Why KNN**
+  
+K-nearest neighbors is a supervised classification method
+
+* Binary outcome (depressed (1) vs not depressed (0))
+* Continuous predictors 
+* KNN is non-parametric 
+
+## CV 
+
+**One important choice in KNN is k**
+
+* if k is too small the model is noisy
+* if k is too big it is too smooth
+
+So, we tried two standard values k = 5 vs k = 10
+For the accuracy check we used 5 - fold cross-validation. 
+
+```{r, echo=FALSE, out.width="40%", fig.align='center'}
+knitr::include_graphics("images/KNN_numeric.png")
+```
+
+k = 5 gives about 0.759 accuracy, k = 10 gives about 0.773.
+Since k = 10 is slightly better, we chose k = 10 for our final KNN model.
+
+## Confusion matrix
+
+The CV accuracy doesn't report how many mistakes the model made. To see that we use confusion matrix
+
+```{r, echo=FALSE, out.width="40%", fig.align='center'}
+knitr::include_graphics("images/confusion_matrix.png")
+```
+
+##
+
+**On our test set we had 8,371 students**
+
+* 2,413 of 3,509 non-depressed students were correctly classified as ‘no depression’
+* 4,034 of 4,862 depressed students were correctly classified as ‘depression’
+* 828 depressed students were missed (model said ‘no depression’).
+* 1,096 non-depressed students were false alarms (model said ‘depression')
+
+Overall, it gives us approximately 77% of accuracy
+
+## KNN numerical + categorical
+
+After that, we also let KNN use the categorical information:
+* we added categorical variable
+* turned these into dummy variables
+* used 5 fold cross-validation
+
+## CV
+
+```{r, echo=FALSE, out.width="40%", fig.align='center'}
+knitr::include_graphics("images/KNN_numeric_Categorical.png")
+```
+
+* k = 10 again performs better than k = 5
+* The best cross-validated accuracy is now about 0.83, which is higher than the 0.77 we had with numeric predictors only
+
+## Confusion matrix
+To see what this means in terms of individual students, we again look at the confusion matrix for k = 10:
+
+```{r, echo=FALSE, out.width="40%", fig.align='center'}
+knitr::include_graphics("images/confusion_matrix_categorical.png")
+```
+
+##
+
+**Total students in this test set: 5,581**
+
+* 1,699 of 2,304 non-depressed students were correctly predicted as 0
+* 2,917 of 3,277 depressed students were correctly predicted as 1
+* 360 depressed students were missed (predicted as 0 instead of 1)
+* 605 non-depressed students were false alarms (predicted as 1 instead of 0)
+
+Overall, KNN with numeric + categorical predictors reaches about 82–83% accuracy,
+so including these categorical variables makes the model more accurate than using only numeric predictors
+
 
 
 ## Juliette Lasso
