@@ -49,14 +49,19 @@ Logistic Regression, K Nearest Neighbors, Lasso and Random Forest
 
 ## Slide 2: The Results - Tanner
 
-* <span style="color: blue">**Type II (Glutton):**</span> Eats fast, gets full quickly.
-* <span style="color: red">**Type III (Learner):**</span> Slow start (learning), accelerates, then gets full.
+Key Takeaways
 
-<br>
+- **Random Forests can make accurate predictions** for student depression  
+- **Trying multiple mtry values** (features per split) improves performance,  
+  though it increases computation time  
+- **Variable importance is highly intuitive and useful** for interpretation  
+    - Suicidal Thoughts  
+    - Academic Pressure  
+    - Age  
+    - Study Hours  
+- **Cross-validation accuracy exceeded 83.5%**
 
-**The Issue:** These biological behaviors look mathematically identical at high prey densities.
 
-**The Goal:** Distinguish the correct model using the fewest experiments possible.
 
 ## Slide 3: The Results - Munisa
 
