@@ -42,12 +42,62 @@ Logistic Regression, K Nearest Neighbors, Lasso and Random Forest
 
 * Removed ID, Profession, Work Pressure and Job Satisfaction
 
+## Leah - Data Exploration
 
-## Descriptive Graphs
+* <span style="color:blue">**Goal of plotting**</span>
+  Prior to fitting any models, understand relationships present between various predictors.
+  
+* <span style="color:blue">**Process**</span>
+  - Created scatterplots for numeric-numeric pairs
+  - Created bar plots for categorical predictors
+  - Created boxplots to visualize interactions between categorical and numeric predictors
+  - Created histograms to visualize distributions of numeric predictors
+  
+* <span style="color:blue">**Results of plots**</span>
+  - Higher financial stress among students who reported "yes" to having suicidal thoughts
+  - Most students were under the age of 35, identified as men, and were pursuing undergraduate degrees
+  
+```{r}
+knitr::include_graphics("LeahPlotting.png")
+```
 
 
+## Leah - Logistic Regression
 
-## Slide 2: The Results - Tanner
+* <span style="color:blue">**Approach**</span>
+  - Created 16 logistic regression models, starting with a single predictor and slowly adding more
+  
+* <span style="color:blue">**Details**</span>
+  - Converted all categorical predictors into factors
+  - Created a list of formulas for the various models - 16 models total, 13 adding predictors individually and 3 with interaction terms based on intuition
+  - Used a loop to fit each model with formulas
+  
+* <span style="color:blue">**Motivation for Approach**</span>
+  - Comparing model complexity between various predictors and measure predictive accuracy compared to another types of models
+
+  
+## Leah - 5-Fold Cross Validation Results
+
+* <span style="color:blue">**Details**</span>
+  - Group landed on each trying 5-fold cross validation for each of the models to compare accurately
+  - Using model, predicted depression status and compared to actual depression status
+  - Calculated accuracy for each of the models
+  - Averaged model performance across folds
+  
+* <span style="color:blue">**Top Performing Models**</span>
+  1. **All 13 predictors, no interaction terms** - Accuracy: **84.791%**
+  2. **All 13 predictors + Interaction of Family History of Mental Illness x Have you ever had suicidal thoughts?** - Accuracy: **84.784%**
+  3. **All 13 predictors + Interaction of Sleep Duration x Work/Study Hours** - Accuracy: **84.780%**
+  
+* <span style="color:blue">**Conclusion**</span>
+  - Best performing model was one with no interactions, and although adding they came close in terms of accuracy, they did not improve it much.
+  
+```{r}
+knitr::include_graphics("LeahResults.png")
+```
+
+
+## The Results - Tanner
 
 Key Takeaways
 
@@ -183,8 +233,5 @@ knitr::include_graphics("images/Lasso Image.png")
 ```
 
 
-
-
-## Slide 4: The Results - Leah
 
 ## Slide 5: Conclusion
