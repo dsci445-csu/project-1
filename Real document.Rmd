@@ -1,6 +1,6 @@
 ---
-title: "Project 6"
-author: "Juliette Dashe"
+title: "Project 1"
+author: "Juliette Dashe, Tanner Halopoff, Munisa Yaqub, Leah Cordova"
 date: "2025-11-15"
 output: html_document
 ---
@@ -18,13 +18,6 @@ table(student_depression_dataset$Degree)
 names(student_depression_dataset)
 ```
 
-
-
-```{r}
-
-#Juliette's code
-print(">>>")
-```
 
 ```{r}
 #Tanner's code
@@ -136,10 +129,10 @@ plot(varImp(rf_cv_model))
 ```
 
 
-
 ```{r}
 
 ##----------------------------Munisa's code-----------------------------------------
+
 ##----------------------------KNN with numeric values only-----------------------------------------
 
 library(class)
@@ -587,33 +580,29 @@ ggplot(data = df_clean, aes(x = `Financial Stress`)) + geom_histogram()
 ```{r}
 #Leah's code 6
 
-#Logistic Regression
+#Logistic regression
 
 library(tidyverse)
-library(caret)
-library(dplyr)
-library(forcats)
-
-set.seed(445)
-
-#Resolving issue with city
+#Getting data ready to use glm()
 df_clean <- df_clean %>%
   mutate(across(where(is.character), as.factor))
-df_clean <- df_clean %>%
-  mutate(City = fct_lump(City, n = 10))
+df_clean$City <- fct_lump(df_clean$City, n = 10)
 
-#Creating folds for cross validation
-folds <- createFolds(df_clean$Depression, k = 5, list = TRUE)
+#Splitting training and testing data
+training_index <- sample(1:nrow(df_clean), 0.8 * nrow(df_clean))
+train <- df_clean[training_index, ]
+test  <- df_clean[-training_index, ]
+
 
 accuracy_matrix <- matrix(NA, nrow = 5, ncol = 16)
 
 df_clean$City <- factor(df_clean$City)
 
-for (i in 1:5) {
+for (i in 1:5) 
   #Splitting training and testing data
-  test_indexes <- folds[[i]]
-  train <- df_clean[-test_indexes, ]
-  test  <- df_clean[test_indexes, ]
+  training_index <- sample(1:nrow(df_clean), 0.8 * nrow(df_clean))
+  train <- df_clean[training_index, ]
+  test  <- df_clean[-training_index, ]
 
   #Fixing missing values in Financial Stress
   test <- test %>% drop_na(`Financial Stress`)
@@ -651,18 +640,131 @@ for (i in 1:5) {
     pred <- ifelse(prob > 0.5, 1, 0)
     accuracy_matrix[i, m] <- mean(pred == test$Depression, na.rm = TRUE)
   }
+  
+factor_cols <- names(Filter(is.factor, train))
+for (col in factor_cols) {
+  test[[col]] <- factor(test[[col]], levels = levels(train[[col]]))
 }
 
-#Computing average accuracy for comparison
-fold_cv_results <- colMeans(accuracy_matrix, na.rm = TRUE)
+test <- test %>% drop_na(`Financial Stress`)
 
-results_df <- data.frame(
-  Model = paste0("Model ", 1:16),
-  Predictors = 1:16,
-  Accuracy = fold_cv_results
-)
+#Model 1
+model1 <- glm(Depression ~ `Gender`, data = train, family = 'binomial')
+probability1 <- predict(model1, test, type = 'response')
+prediction1 <- ifelse(probability1 > 0.5, 1, 0)
+actual_class1 <- mean(prediction1 == test$Depression)
+actual_class1
 
-#Put it in a table
-kable(results_df, caption = "5 Fold Cross Validation Results for Logistic Regression Models")
+#Model 2
+model2 <- glm(Depression ~ `Gender` + `Age`, data = train, family = 'binomial')
+probability2 <- predict(model2, test, type = 'response')
+prediction2 <- ifelse(probability2 > 0.5, 1, 0)
+actual_class2 <- mean(prediction2 == test$Depression)
+actual_class2
+
+#Model 3
+model3 <- glm(Depression ~ `Gender` + `Age` + `City`, data = train, family = 'binomial')
+probability3 <- predict(model3, test, type = 'response')
+prediction3 <- ifelse(probability3 > 0.5, 1, 0)
+actual_class3 <- mean(prediction3 == test$Depression)
+actual_class3
+
+#Model 4
+model4 <- glm(Depression ~ `Gender` + `Age` + `City` + `Academic Pressure`, data = train, family = 'binomial')
+probability4 <- predict(model4, test, type = 'response')
+prediction4 <- ifelse(probability4 > 0.5, 1, 0)
+actual_class4 <- mean(prediction4 == test$Depression)
+actual_class4
+
+#Model 5
+model5 <- glm(Depression ~ `Gender` + `Age` + `City` + `Academic Pressure` + `CGPA`, data = train, family = 'binomial')
+probability5 <- predict(model5, test, type = 'response')
+prediction5 <- ifelse(probability5 > 0.5, 1, 0)
+actual_class5 <- mean(prediction5 == test$Depression)
+actual_class5
+
+#Model 6
+model6 <- glm(Depression ~ `Gender` + `Age` + `City` + `Academic Pressure` + `CGPA` + `Study Satisfaction`, data = train, family = 'binomial')
+probability6 <- predict(model6, test, type = 'response')
+prediction6 <- ifelse(probability6 > 0.5, 1, 0)
+actual_class6 <- mean(prediction6 == test$Depression)
+actual_class6
+
+#Model 7
+model7 <- glm(Depression ~ `Gender` + `Age` + `City` + `Academic Pressure` + `CGPA` + `Study Satisfaction` + `Sleep Duration`, data = train, family = 'binomial')
+probability7 <- predict(model7, test, type = 'response')
+prediction7 <- ifelse(probability7 > 0.5, 1, 0)
+actual_class7 <- mean(prediction7 == test$Depression)
+actual_class7
+
+#Model 8
+model8 <- glm(Depression ~ `Gender` + `Age` + `City` + `Academic Pressure` + `CGPA` + `Study Satisfaction` + `Sleep Duration` + `Dietary Habits`, data = train, family = 'binomial')
+probability8 <- predict(model8, test, type = 'response')
+prediction8 <- ifelse(probability8 > 0.5, 1, 0)
+actual_class8 <- mean(prediction8 == test$Depression)
+actual_class8
+
+#Model 9
+model9 <- glm(Depression ~ `Gender` + `Age` + `City` + `Academic Pressure` + `CGPA` + `Study Satisfaction` + `Sleep Duration` + `Dietary Habits` + `Have you ever had suicidal thoughts ?`, data = train, family = 'binomial')
+probability9 <- predict(model9, test, type = 'response')
+prediction9 <- ifelse(probability9 > 0.5, 1, 0)
+actual_class9 <- mean(prediction9 == test$Depression)
+actual_clas
+#Model 10
+model10 <- glm(Depression ~ `Gender` + `Age` + `City` + `Academic Pressure` + `CGPA` + `Study Satisfaction` + `Sleep Duration` + `Dietary Habits` + `Have you ever had suicidal thoughts ?` + `Work/Study Hours`, data = train, family = 'binomial')
+probability10 <- predict(model10, test, type = 'response')
+prediction10 <- ifelse(probability10 > 0.5, 1, 0)
+actual_class10 <- mean(prediction10 == test$Depression)
+actual_class10
+
+#Model 11
+model11 <- glm(Depression ~ `Gender` + `Age` + `City` + `Academic Pressure` + `CGPA` + `Study Satisfaction` + `Sleep Duration` + `Dietary Habits` + `Have you ever had suicidal thoughts ?` + `Work/Study Hours` + `Financial Stress`, data = train, family = 'binomial')
+probability11 <- predict(model11, test, type = 'response')
+prediction11 <- ifelse(probability11 > 0.5, 1, 0)
+actual_class11 <- mean(prediction11 == test$Depression)
+actual_class11
+
+#Model 12
+model12 <- glm(Depression ~ `Gender` + `Age` + `City` + `Academic Pressure` + `CGPA` + `Study Satisfaction` + `Sleep Duration` + `Dietary Habits` + `Have you ever had suicidal thoughts ?` + `Work/Study Hours` + `Financial Stress` + `Family History of Mental Illness`, data = train, family = 'binomial')
+probability12 <- predict(model12, test, type = 'response')
+prediction12 <- ifelse(probability12 > 0.5, 1, 0)
+actual_class12 <- mean(prediction12 == test$Depression)
+actual_class12
+
+#Model 13
+model13 <- glm(Depression ~ `Gender` + `Age` + `City` + `Academic Pressure` + `CGPA` + `Study Satisfaction` + `Sleep Duration` + `Dietary Habits` + `Have you ever had suicidal thoughts ?` + `Work/Study Hours` + `Financial Stress` + `Family History of Mental Illness` + `Academic_Level`, data = train, family = 'binomial')
+probability13 <- predict(model13, test, type = 'response')
+prediction13 <- ifelse(probability13 > 0.5, 1, 0)
+actual_class13 <- mean(prediction13 == test$Depression)
+actual_class13
+
+#Model 14 with interaction 1
+model14 <- glm(Depression ~ `Gender` + `Age` + `City` + `Academic Pressure` + `CGPA` + `Study Satisfaction` + `Sleep Duration` + `Dietary Habits` + `Have you ever had suicidal thoughts ?` + `Work/Study Hours` + `Financial Stress` + `Family History of Mental Illness` + `Academic_Level` + `Academic Pressure`*`Academic_Level`, data = train, family = 'binomial')
+probability14 <- predict(model14, test, type = 'response')
+prediction14 <- ifelse(probability14 > 0.5, 1, 0)
+actual_class14 <- mean(prediction14 == test$Depression)
+actual_class14
+
+#Model 15 with interaction 2
+model15 <- glm(Depression ~ `Gender` + `Age` + `City` + `Academic Pressure` + `CGPA` + `Study Satisfaction` + `Sleep Duration` + `Dietary Habits` + `Have you ever had suicidal thoughts ?` + `Work/Study Hours` + `Financial Stress` + `Family History of Mental Illness` + `Academic_Level` + `Sleep Duration`*`Work/Study Hours`, data = train, family = 'binomial')
+probability15 <- predict(model15, test, type = 'response')
+prediction15 <- ifelse(probability15 > 0.5, 1, 0)
+actual_class15 <- mean(prediction15 == test$Depression)
+actual_class15
+
+#Model 16 with interaction 3
+model16 <- glm(Depression ~ `Gender` + `Age` + `City` + `Academic Pressure` + `CGPA` + `Study Satisfaction` + `Sleep Duration` + `Dietary Habits` + `Have you ever had suicidal thoughts ?` + `Work/Study Hours` + `Financial Stress` + `Family History of Mental Illness` + `Academic_Level` + `Family History of Mental Illness`*`Have you ever had suicidal thoughts ?`, data = train, family = 'binomial')
+probability16 <- predict(model16, test, type = 'response')
+prediction16 <- ifelse(probability16 > 0.5, 1, 0)
+actual_class16 <- mean(prediction16 == test$Depression)
+actual_class16
+
+#Comparing results of cross-validation
+library(knitr)
+
+results_vector <- c(actual_class1, actual_class2, actual_class3, actual_class4, actual_class5, actual_class6, actual_class7, actual_class8, actual_class9, actual_class10, actual_class11, actual_class12, actual_class13, actual_class14, actual_class15, actual_class16)
+number_predictors <- c(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16)
+results_df <- data.frame(Model = paste0("Model", 1:16), Predictors = number_predictors, Accuracy = results_vector)
+kable(results_df, caption = "Comparing Logistic Models")
 ```
 
