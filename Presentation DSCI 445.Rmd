@@ -63,7 +63,7 @@ Key Takeaways
 
 
 
-## K-nearest neighbours
+## K-nearest neighbors
 
 **Why KNN**
   
