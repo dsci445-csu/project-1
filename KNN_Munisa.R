@@ -1,5 +1,5 @@
-##----------------------------Munisa's code-----------------------------------------
-##----------------------------KNN with numeric values only-----------------------------------------
+## KNN Numeric
+
 
 library(class)
 
@@ -128,9 +128,10 @@ plot(
   main = "KNN 5-fold CV Accuracy (k = 5 vs 10)"
 )
 
-```
 
-```{r}
+
+## KNN Numeric + Categorical
+
 
 ##-------------------------Munisa's KNN with numeric + categorical--------------------------------
 
@@ -277,3 +278,4 @@ barplot(
   ylab = "5-fold CV Accuracy",
   main = "KNN with numeric + categorical (k = 5 vs 10)"
 )
+
