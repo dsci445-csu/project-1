@@ -3,7 +3,7 @@
 
 library(class)
 
-# 1. Predictor columns
+# 1. Predictor columns (numeric)
 predictor_cols <- c(
   "Age",
   "Academic.Pressure",
@@ -22,14 +22,14 @@ knn_test  <- rf_data[-train_idx, ]
 X_train <- knn_train[, predictor_cols]
 X_test  <- knn_test[, predictor_cols]
 
-# Ensure all predictors are numeric 
+# all predictors are numeric 
 X_train <- data.frame(lapply(X_train, function(z) as.numeric(as.character(z))))
 X_test  <- data.frame(lapply(X_test,  function(z) as.numeric(as.character(z))))
 
 y_train <- knn_train$Depression
 y_test  <- knn_test$Depression
 
-# 3. Drop any rows with NA in predictors or response
+# 3. Drop any rows with NA
 train_complete <- complete.cases(X_train) & !is.na(y_train)
 test_complete  <- complete.cases(X_test)  & !is.na(y_test)
 
@@ -39,7 +39,7 @@ y_train <- y_train[train_complete]
 X_test  <- X_test[test_complete, , drop = FALSE]
 y_test  <- y_test[test_complete]
 
-# 4. 5-fold cross-validation on TRAIN set to choose between k = 5 and k = 10
+# 4. 5-fold cross-validation on TRAIN 
 set.seed(123)
 
 n_train <- nrow(X_train)
@@ -85,12 +85,12 @@ for (j in seq_along(k_values)) {
   cv_acc[j] <- mean(fold_acc)
 }
 
-# 5. CV results and best k (5 or 10)
+# 5. CV results and best k 
 knn_cv_results <- data.frame(
   k = k_values,
   cv_accuracy = cv_acc
 )
-knn_cv_results   # small table for your report
+knn_cv_results  
 
 best_idx <- which.max(cv_acc)
 best_k <- k_values[best_idx]
@@ -128,12 +128,15 @@ plot(
   main = "KNN 5-fold CV Accuracy (k = 5 vs 10)"
 )
 
+```
 
-##----------------------------Munisa's KNN with numeric + categorical-----------------------------------------
+```{r}
+
+##-------------------------Munisa's KNN with numeric + categorical--------------------------------
 
 library(class)
 
-# New dataframe
+# New data frame
 df_all <- read.csv("student_depression_dataset.csv")
 
 # 1. Select numeric + categorical predictors + response
@@ -154,7 +157,7 @@ knn2_data <- df_all[, c(
   "Depression"
 )]
 
-# 2. Drop rows with any NA
+# 2. Drop NA
 knn2_data <- na.omit(knn2_data)
 
 # 3. Mark categorical predictors and response as factors
@@ -165,8 +168,8 @@ knn2_data$Have.you.ever.had.suicidal.thoughts.. <- as.factor(knn2_data$Have.you.
 knn2_data$Family.History.of.Mental.Illness <- as.factor(knn2_data$Family.History.of.Mental.Illness)
 knn2_data$Depression <- as.factor(knn2_data$Depression)
 
-# 4. Create dummy variables for categoricals 
-X_full <- model.matrix(Depression ~ ., data = knn2_data)[, -1]  
+# 4. Create dummy variables for categoricals using model.matrix
+X_full <- model.matrix(Depression ~ ., data = knn2_data)[, -1]  # drop intercept
 y_full <- knn2_data$Depression
 
 # 5. Train/test split (80/20)
@@ -179,7 +182,7 @@ X2_test  <- X_full[-train_idx2, , drop = FALSE]
 y2_train <- y_full[train_idx2]
 y2_test  <- y_full[-train_idx2]
 
-# ensure no NAs remain
+# No NA
 train_ok <- complete.cases(X2_train) & !is.na(y2_train)
 test_ok  <- complete.cases(X2_test)  & !is.na(y2_test)
 
@@ -189,7 +192,7 @@ y2_train <- y2_train[train_ok]
 X2_test  <- X2_test[test_ok, , drop = FALSE]
 y2_test  <- y2_test[test_ok]
 
-# 6. 5-fold CV to compare k = 5 vs k = 10
+# 6. 5-fold CV 
 set.seed(123)
 n_train2 <- nrow(X2_train)
 K_folds <- 5
@@ -232,7 +235,7 @@ for (j in seq_along(k_values2)) {
   cv_acc2[j] <- mean(fold_acc)
 }
 
-# 7. CV results and best k (5 vs 10)
+# 7. CV results and best k 
 knn2_cv_results <- data.frame(
   k = k_values2,
   cv_accuracy = cv_acc2
