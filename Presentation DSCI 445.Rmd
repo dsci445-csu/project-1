@@ -57,7 +57,7 @@ Logistic Regression, K Nearest Neighbors, Lasso and Random Forest
   - Higher financial stress among students who reported "yes" to having suicidal thoughts
   - Most students were under the age of 35, identified as men, and were pursuing undergraduate degrees
   
-```{r}
+```{r, echo=FALSE, out.width="80%", fig.align="center"}
 knitr::include_graphics("images/LeahPlotting.png")
 ```
 
@@ -92,7 +92,7 @@ knitr::include_graphics("images/LeahPlotting.png")
 * <span style="color:blue">**Conclusion**</span>
   - Best performing model was one with no interactions, and although adding they came close in terms of accuracy, they did not improve it much.
   
-```{r}
+```{r, echo=FALSE, out.width="80%", fig.align="center"}
 knitr::include_graphics("images/LeahResults.png")
 ```
 
