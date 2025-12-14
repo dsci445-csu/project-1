@@ -1,0 +1,3 @@
+"0",""
+"0","# 2. BIC Plot: Look for the minimum"
+"0","plot(plot_df_summary$p, plot_df_summary$BIC, xlab = ""Predictors (p)"", ylab = ""BIC"", type = ""l"")"

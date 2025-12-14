@@ -1,0 +1,1 @@
+"0","points(which.min(plot_df_summary$BIC), plot_df_summary$BIC[which.min(plot_df_summary$BIC)], col = ""red"", pch = 20)"

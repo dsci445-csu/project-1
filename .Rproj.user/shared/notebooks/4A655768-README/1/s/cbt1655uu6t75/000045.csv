@@ -1,0 +1,1 @@
+"0","points(which.max(plot_df_summary$AdjR2), plot_df_summary$AdjR2[which.max(plot_df_summary$AdjR2)], col = ""red"", pch = 20)"

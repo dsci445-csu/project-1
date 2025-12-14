@@ -1,0 +1,5 @@
+"0","glm_spec <- logistic_reg()"
+"0",""
+"0","logistic_recipe <- recipe(Direction ~ Lag1 + Lag2, data = Weekly)"
+"0",""
+"0",""

@@ -1,0 +1,11 @@
+"0","spec(nfl_sal)
+"
+"1","cols(
+  PlayerName = [31mcol_character()[39m,
+  Position = [31mcol_character()[39m,
+  Salary = [32mcol_double()[39m,
+  NextSalary = [32mcol_double()[39m,
+  SalaryCap = [32mcol_double()[39m,
+  Team = [31mcol_character()[39m
+)
+"

@@ -1,0 +1,441 @@
+---
+title: "Project 6"
+author: "Juliette Dashe"
+date: "2025-11-15"
+output: html_document
+---
+```{r}
+
+
+student_depression_dataset$id <- NULL
+student_depression_dataset$`Work Pressure` <- NULL
+student_depression_dataset$`Job Satisfaction` <- NULL
+student_depression_dataset$Profession <- NULL
+
+table(student_depression_dataset$Degree)
+
+
+names(student_depression_dataset)
+```
+
+
+
+```{r}
+
+#Juliette's code
+print(">>>")
+```
+
+```{r}
+#Tanner's code
+
+library(dplyr)
+library(randomForest)
+
+df <- read.csv("student_depression_dataset.csv")
+
+rf_data <- df[, c(
+  "Age",
+  "Academic.Pressure",
+  "Work.Pressure",
+  "CGPA",
+  "Study.Satisfaction",
+  "Job.Satisfaction",
+  "Work.Study.Hours",
+  "Financial.Stress",
+  "Depression"
+)]
+
+rf_data <- na.omit(rf_data)
+
+rf_data$Depression <- as.factor(rf_data$Depression)
+
+set.seed(445)
+n <- nrow(rf_data)
+train_idx <- sample(1:n, size = floor(0.7 * n))
+train <- rf_data[train_idx, ]
+test  <- rf_data[-train_idx, ]
+
+set.seed(445)
+rf_model <- randomForest(
+  Depression ~ ., 
+  data = train,
+  ntree = 500,   
+  mtry = 3,      
+  importance = TRUE
+)
+
+rf_pred <- predict(rf_model, newdata = test)
+
+rf_tab <- table(Predicted = rf_pred, Actual = test$Depression)
+print(rf_tab)
+
+rf_accuracy <- sum(diag(rf_tab)) / sum(rf_tab)
+cat("Test set accuracy:", rf_accuracy, "\n")
+
+varImpPlot(rf_model, main = "Variable Importance (Random Forest)")
+```
+
+
+
+```{r}
+
+##----------------------------Munisa's code-----------------------------------------
+
+df <- read.csv("student_depression_dataset.csv")
+
+knn_data <- df[ , c(
+  "Age",
+  "Academic.Pressure",
+  "Work.Pressure",
+  "CGPA",
+  "Study.Satisfaction",
+  "Job.Satisfaction",
+  "Work.Study.Hours",
+  "Financial.Stress",
+  "Depression"
+)]
+
+knn_data <- na.omit(knn_data)          # <<< NEW LINE
+knn_data$Depression <- as.factor(knn_data$Depression)
+
+## 1. Train / test split
+set.seed(123)
+n <- nrow(knn_data)
+train_idx <- sample(1:n, size = floor(0.7 * n))
+
+train <- knn_data[train_idx, ]
+test  <- knn_data[-train_idx, ]
+
+## 2. X and y
+predictor_cols <- c(
+  "Age",
+  "Academic.Pressure",
+  "Work.Pressure",
+  "CGPA",
+  "Study.Satisfaction",
+  "Job.Satisfaction",
+  "Work.Study.Hours",
+  "Financial.Stress"
+)
+
+X_train <- train[ , predictor_cols]
+X_test  <- test[ , predictor_cols]
+
+X_train <- data.frame(lapply(X_train, as.numeric))
+X_test  <- data.frame(lapply(X_test,  as.numeric))
+
+y_train <- train$Depression
+y_test  <- test$Depression
+
+train_complete <- complete.cases(X_train) & !is.na(y_train)
+test_complete  <- complete.cases(X_test)  & !is.na(y_test)
+
+X_train <- X_train[train_complete, ]
+y_train <- y_train[train_complete]
+
+X_test  <- X_test[test_complete, ]
+y_test  <- y_test[test_complete]
+
+## 3. Scale
+train_means <- apply(X_train, 2, mean, na.rm = TRUE)
+train_sds   <- apply(X_train, 2, sd,   na.rm = TRUE)
+
+X_train_scaled <- scale(X_train, center = train_means, scale = train_sds)
+X_test_scaled  <- scale(X_test,  center = train_means, scale = train_sds)
+
+## 4. KNN over several k
+library(class)
+
+k_values <- c(3, 5, 7, 9, 11, 15, 21)
+acc_vec <- numeric(length(k_values))
+
+set.seed(123)
+for (i in seq_along(k_values)) {
+  k <- k_values[i]
+  pred_k <- knn(
+    train = X_train_scaled,
+    test  = X_test_scaled,
+    cl    = y_train,
+    k     = k
+  )
+  tab_k <- table(Predicted = pred_k, Actual = y_test)
+  acc_vec[i] <- sum(diag(tab_k)) / sum(tab_k)
+}
+
+results <- data.frame(k = k_values, accuracy = acc_vec)
+print(results)
+
+best_idx <- which.max(acc_vec)
+best_k <- k_values[best_idx]
+best_k
+
+best_pred <- knn(
+  train = X_train_scaled,
+  test  = X_test_scaled,
+  cl    = y_train,
+  k     = best_k
+)
+
+best_tab <- table(Predicted = best_pred, Actual = y_test)
+best_tab
+best_accuracy <- sum(diag(best_tab)) / sum(best_tab)
+best_accuracy
+
+## 5. Plot
+plot(
+  k_values, acc_vec, type = "b",
+  xlab = "Number of Neighbors (k)",
+  ylab = "Test Accuracy",
+  main = "KNN Accuracy vs k for Student Depression"
+)
+
+```
+
+
+
+
+```{r}
+#Leah's code
+
+#Importing Dataset
+library(readr)
+student_depression_dataset <- read_csv("student_depression_dataset.csv")
+
+#Data Cleaning
+student_depression_dataset$id <- NULL
+student_depression_dataset$`Work Pressure` <- NULL
+student_depression_dataset$`Job Satisfaction` <- NULL
+student_depression_dataset$Profession <- NULL
+
+#Juliette's Data Cleaning with Degree Currently Pursuing
+library(dplyr)
+
+df_clean <- student_depression_dataset |>
+  mutate(
+    # Making degrees into 5 categories 
+    Academic_Level = case_when(
+      # High School
+      Degree == "'Class 12'" ~ "High School",
+      
+      # Bachelor's Degrees (including B.Pharm, B.Tech, MBBS, etc.)
+      Degree %in% c("BE", "B.Arch", "BHM", "B.Com", "BSc", "B.Ed", "LLB", 
+                    "B.Pharm", "B.Tech", "BA", "BBA", "BCA") ~ "Bachelor's",
+      
+      # Master's Degrees/Professional Doctorates
+      Degree %in% c("MA", "MBA", "MBBS", "MCA", "LLM", "MD", "M.Com", 
+                    "ME", "M.Ed", "MHM", "M.Pharm", "MSc", "M.Tech", "MBBS") ~ "Master's",
+      
+      # PhD
+      Degree == "PhD" ~ "PhD",
+      
+      # Other/Unspecified
+      Degree == "Others" ~ "Other",
+      
+      # Catch-whatever else I might be missing 
+      TRUE ~ "Unknown"
+    ),
+    
+    # Convert the new column to an ordered factor for consistent analysis
+    Academic_Level = factor(Academic_Level, 
+                            levels = c("High School", "Bachelor's", "Master's", "PhD", "Other", "Unknown"))
+  )
+
+cat("Frequency of new Academic Levels:\n")
+df_clean |>
+  count(Academic_Level) |>
+  print()
+```
+
+```{r}
+#Leah's code 2
+
+#Plotting (not all useful but I tried all combos)
+head(df_clean)
+
+library(ggplot2)
+
+#Scatterplots - dbl vs dbl values
+#Age vs other predictors
+ggplot(data = df_clean, aes(x = `Age`, y = `Academic Pressure`)) + geom_point()
+ggplot(data = df_clean, aes(x = `Age`, y = `CGPA`)) + geom_point()
+ggplot(data = df_clean, aes(x = `Age`, y = `Study Satisfaction`)) + geom_point()
+ggplot(data = df_clean, aes(x = `Age`, y = `Work/Study Hours`)) + geom_point()
+ggplot(data = df_clean, aes(x = `Age`, y = `Financial Stress`)) + geom_point()
+
+#Academic Pressure vs other predictors
+ggplot(data = df_clean, aes(x = `Academic Pressure`, y = `CGPA`)) + geom_point()
+ggplot(data = df_clean, aes(x = `Academic Pressure`, y = `Study Satisfaction`)) + geom_point()
+ggplot(data = df_clean, aes(x = `Academic Pressure`, y = `Work/Study Hours`)) + geom_point()
+ggplot(data = df_clean, aes(x = `Academic Pressure`, y = `Financial Stress`)) + geom_point()
+
+#CGPA vs other predictors
+ggplot(data = df_clean, aes(x = `CGPA`, y = `Study Satisfaction`)) + geom_point()
+ggplot(data = df_clean, aes(x = `CGPA`, y = `Work/Study Hours`)) + geom_point()
+ggplot(data = df_clean, aes(x = `CGPA`, y = `Financial Stress`)) + geom_point()
+
+#Study Satisfaction vs other predictors
+ggplot(data = df_clean, aes(x = `Study Satisfaction`, y = `Work/Study Hours`)) + geom_point()
+ggplot(data = df_clean, aes(x = `Study Satisfaction`, y = `Financial Stress`)) + geom_point()
+
+#Work/Study Hours vs other predictors
+ggplot(data = df_clean, aes(x = `Work/Study Hours`, y = `Financial Stress`)) + geom_point()
+```
+```{r}
+#Leah's code 3
+
+#Plotting
+head(df_clean)
+
+#Bar plots - chrs
+ggplot(data = df_clean, aes(x = `Gender`)) + geom_bar()
+ggplot(data = df_clean, aes(x = `City`)) + geom_bar()
+ggplot(data = df_clean, aes(x = `Sleep Duration`)) + geom_bar()
+ggplot(data = df_clean, aes(x = `Dietary Habits`)) + geom_bar()
+ggplot(data = df_clean, aes(x = `Have you ever had suicidal thoughts ?`)) + geom_bar()
+ggplot(data = df_clean, aes(x = `Academic_Level`)) + geom_bar()
+```
+```{r}
+#Leah's code 4
+
+#Plotting
+head(df_clean)
+
+#Boxplots - chr vs dbl
+#Gender vs other predictors
+ggplot(data = df_clean, aes(x = `Gender`, y = `Age`)) + geom_boxplot()
+ggplot(data = df_clean, aes(x = `Gender`, y = `Academic Pressure`)) + geom_boxplot()
+ggplot(data = df_clean, aes(x = `Gender`, y = `CGPA`)) + geom_boxplot()
+ggplot(data = df_clean, aes(x = `Gender`, y = `Study Satisfaction`)) + geom_boxplot()
+ggplot(data = df_clean, aes(x = `Gender`, y = `Work/Study Hours`)) + geom_boxplot()
+ggplot(data = df_clean, aes(x = `Gender`, y = `Financial Stress`)) + geom_boxplot()
+
+#Sleep Duration vs other predictors
+ggplot(data = df_clean, aes(x = `Sleep Duration`, y = `Age`)) + geom_boxplot()
+ggplot(data = df_clean, aes(x = `Sleep Duration`, y = `Academic Pressure`)) + geom_boxplot()
+ggplot(data = df_clean, aes(x = `Sleep Duration`, y = `CGPA`)) + geom_boxplot()
+ggplot(data = df_clean, aes(x = `Sleep Duration`, y = `Study Satisfaction`)) + geom_boxplot()
+ggplot(data = df_clean, aes(x = `Sleep Duration`, y = `Work/Study Hours`)) + geom_boxplot()
+ggplot(data = df_clean, aes(x = `Sleep Duration`, y = `Financial Stress`)) + geom_boxplot()
+
+#Dietary Habits vs other predictors
+ggplot(data = df_clean, aes(x = `Dietary Habits`, y = `Age`)) + geom_boxplot()
+ggplot(data = df_clean, aes(x = `Dietary Habits`, y = `Academic Pressure`)) + geom_boxplot()
+ggplot(data = df_clean, aes(x = `Dietary Habits`, y = `CGPA`)) + geom_boxplot()
+ggplot(data = df_clean, aes(x = `Dietary Habits`, y = `Study Satisfaction`)) + geom_boxplot()
+ggplot(data = df_clean, aes(x = `Dietary Habits`, y = `Work/Study Hours`)) + geom_boxplot()
+ggplot(data = df_clean, aes(x = `Dietary Habits`, y = `Financial Stress`)) + geom_boxplot()
+
+#Suicidal thoughts vs other predictors
+ggplot(data = df_clean, aes(x = `Have you ever had suicidal thoughts ?`, y = `Age`)) + geom_boxplot()
+ggplot(data = df_clean, aes(x = `Have you ever had suicidal thoughts ?`, y = `Academic Pressure`)) + geom_boxplot()
+ggplot(data = df_clean, aes(x = `Have you ever had suicidal thoughts ?`, y = `CGPA`)) + geom_boxplot()
+ggplot(data = df_clean, aes(x = `Have you ever had suicidal thoughts ?`, y = `Study Satisfaction`)) + geom_boxplot()
+ggplot(data = df_clean, aes(x = `Have you ever had suicidal thoughts ?`, y = `Work/Study Hours`)) + geom_boxplot()
+ggplot(data = df_clean, aes(x = `Have you ever had suicidal thoughts ?`, y = `Financial Stress`)) + geom_boxplot()
+
+#Family History of Mental Illness vs other predictors
+ggplot(data = df_clean, aes(x = `Family History of Mental Illness`, y = `Age`)) + geom_boxplot()
+ggplot(data = df_clean, aes(x = `Family History of Mental Illness`, y = `Academic Pressure`)) + geom_boxplot()
+ggplot(data = df_clean, aes(x = `Family History of Mental Illness`, y = `CGPA`)) + geom_boxplot()
+ggplot(data = df_clean, aes(x = `Family History of Mental Illness`, y = `Study Satisfaction`)) + geom_boxplot()
+ggplot(data = df_clean, aes(x = `Family History of Mental Illness`, y = `Work/Study Hours`)) + geom_boxplot()
+ggplot(data = df_clean, aes(x = `Family History of Mental Illness`, y = `Financial Stress`)) + geom_boxplot()
+```
+```{r}
+#Leah's code 5
+
+#Plotting
+head(df_clean)
+
+#Histograms - dbls
+ggplot(data = df_clean, aes(x = `Age`)) + geom_histogram()
+ggplot(data = df_clean, aes(x = `Academic Pressure`)) + geom_histogram()
+ggplot(data = df_clean, aes(x = `CGPA`)) + geom_histogram()
+ggplot(data = df_clean, aes(x = `Study Satisfaction`)) + geom_histogram()
+ggplot(data = df_clean, aes(x = `Work/Study Hours`)) + geom_histogram()
+ggplot(data = df_clean, aes(x = `Financial Stress`)) + geom_histogram()
+```
+```{r}
+#Leah's code 6
+
+#Logistic Regression
+
+library(tidyverse)
+library(caret)
+library(dplyr)
+library(forcats)
+
+set.seed(445)
+
+#Resolving issue with city
+df_clean <- df_clean %>%
+  mutate(across(where(is.character), as.factor))
+df_clean <- df_clean %>%
+  mutate(City = fct_lump(City, n = 10))
+
+#Creating folds for cross validation
+folds <- createFolds(df_clean$Depression, k = 5, list = TRUE)
+
+accuracy_matrix <- matrix(NA, nrow = 5, ncol = 16)
+
+df_clean$City <- factor(df_clean$City)
+
+for (i in 1:5) {
+  #Splitting training and testing data
+  test_indexes <- sample(1:nrow(df_clean), 0.8 * nrow(df_clean))
+  train <- df_clean[test_indexes, ]
+  test  <- df_clean[-test_indexes, ]
+
+  #Fixing missing values in Financial Stress
+  test <- test %>% drop_na(`Financial Stress`)
+  
+  #Setting factor levels
+  factor_cols <- names(Filter(is.factor, train))
+  for (col in factor_cols) {
+    test[[col]] <- factor(test[[col]], levels = levels(train[[col]]))
+  }
+  
+  #Fitting the numerous models
+  formulas <- list(
+  Depression ~ `Gender`,
+  Depression ~ `Gender` + `Age`,
+  Depression ~ `Gender` + `Age` + `City`,
+  Depression ~ `Gender` + `Age` + `City` + `Academic Pressure`,
+  Depression ~ `Gender` + `Age` + `City` + `Academic Pressure` + `CGPA`,
+  Depression ~ `Gender` + `Age` + `City` + `Academic Pressure` + `CGPA` + `Study Satisfaction`,
+  Depression ~ `Gender` + `Age` + `City` + `Academic Pressure` + `CGPA` + `Study Satisfaction` + `Sleep Duration`,
+  Depression ~ `Gender` + `Age` + `City` + `Academic Pressure` + `CGPA` + `Study Satisfaction` + `Sleep Duration` + `Dietary Habits`,
+  Depression ~ `Gender` + `Age` + `City` + `Academic Pressure` + `CGPA` + `Study Satisfaction` + `Sleep Duration` + `Dietary Habits` + `Have you ever had suicidal thoughts ?`,
+  Depression ~ `Gender` + `Age` + `City` + `Academic Pressure` + `CGPA` + `Study Satisfaction` + `Sleep Duration` + `Dietary Habits` + `Have you ever had suicidal thoughts ?` + `Work/Study Hours`,
+  Depression ~ `Gender` + `Age` + `City` + `Academic Pressure` + `CGPA` + `Study Satisfaction` + `Sleep Duration` + `Dietary Habits` + `Have you ever had suicidal thoughts ?` + `Work/Study Hours` + `Financial Stress`,
+  Depression ~ `Gender` + `Age` + `City` + `Academic Pressure` + `CGPA` + `Study Satisfaction` + `Sleep Duration` + `Dietary Habits` + `Have you ever had suicidal thoughts ?` + `Work/Study Hours` + `Financial Stress` + `Family History of Mental Illness`,
+  Depression ~ `Gender` + `Age` + `City` + `Academic Pressure` + `CGPA` + `Study Satisfaction` + `Sleep Duration` + `Dietary Habits` + `Have you ever had suicidal thoughts ?` + `Work/Study Hours` + `Financial Stress` + `Family History of Mental Illness` + `Academic_Level`,
+  Depression ~ `Gender` + `Age` + `City` + `Academic Pressure` + `CGPA` + `Study Satisfaction` + `Sleep Duration` + `Dietary Habits` + `Have you ever had suicidal thoughts ?` + `Work/Study Hours` + `Financial Stress` + `Family History of Mental Illness` + `Academic_Level` + `Academic Pressure`:`Academic_Level`,
+  Depression ~ `Gender` + `Age` + `City` + `Academic Pressure` + `CGPA` + `Study Satisfaction` + `Sleep Duration` + `Dietary Habits` + `Have you ever had suicidal thoughts ?` + `Work/Study Hours` + `Financial Stress` + `Family History of Mental Illness` + `Academic_Level` + `Sleep Duration`:`Work/Study Hours`,
+  Depression ~ `Gender` + `Age` + `City` + `Academic Pressure` + `CGPA` + `Study Satisfaction` + `Sleep Duration` + `Dietary Habits` + `Have you ever had suicidal thoughts ?` + `Work/Study Hours` + `Financial Stress` + `Family History of Mental Illness` + `Academic_Level` + `Family History of Mental Illness`:`Have you ever had suicidal thoughts ?`
+)
+  
+  #Looping through models
+  for (m in 1:16) {
+    model <- glm(formulas[[m]], data = train, family = 'binomial')
+    prob <- predict(model, test, type = 'response')
+    pred <- ifelse(prob > 0.5, 1, 0)
+    accuracy_matrix[i, m] <- mean(pred == test$Depression, na.rm = TRUE)
+  }
+}
+
+#Computing average accuracy for comparison
+fold_cv_results <- colMeans(accuracy_matrix, na.rm = TRUE)
+
+results_df <- data.frame(
+  Model = paste0("Model ", 1:16),
+  Predictors = 1:16,
+  Accuracy = fold_cv_results
+)
+
+#Put it in a table
+kable(results_df, caption = "5 Fold Cross Validation Results for Logistic Regression Models")
+
+```
+

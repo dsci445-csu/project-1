@@ -1,0 +1,4 @@
+"0",""
+"0","# Highlight the Minimum Test MSE (Optimal Model Size)"
+"0","min_p <- which.min(plot_df_test$MSE)"
+"0","points(min_p, min(plot_df_test$MSE), col = ""black"", pch = 21, bg = ""red"", cex = 2)"

@@ -1,0 +1,3 @@
+"0",""
+"0","legend(""bottomright"", legend = c(""Type II (Glutton)"", ""Type III (Learner)""),"
+"0","       col = c(""blue"", ""red""), lty = c(1, 2), lwd = 3)"

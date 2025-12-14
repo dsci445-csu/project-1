@@ -1,0 +1,43 @@
+library(tidymodels)
+library(broom)
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+library(ggrepel)
+
+data(Boston, package = "MASS")
+
+predictors <- names(Boston)[names(Boston) != "medv"]
+
+lm_spec <- linear_reg()
+# pred <- predictors[1]
+
+slr_coefs <- data.frame()
+for(pred in predictors) {
+  df <- Boston[, c("medv", pred)]
+  
+  lm_spec |>
+    fit(medv ~ ., data = df) |>
+    tidy() |>
+    select(term, estimate) |>
+    filter(term == pred) |>
+    bind_rows(slr_coefs) -> slr_coefs
+}
+
+lm_spec |>
+  fit(medv ~ ., data = Boston) |>
+  tidy() |>
+  select(term, estimate) -> mlr_coefs
+
+slr_coefs |>
+  left_join(mlr_coefs, by = "term") |>
+  rename("slr" = "estimate.x", "mlr" = "estimate.y") |>
+  ggplot() +
+  geom_abline(aes(slope = 1, intercept = 0), lty = 2) +
+  geom_point(aes(slr, mlr)) +
+  geom_text_repel(aes(slr, mlr, label = term))
+  
+
+
+
+

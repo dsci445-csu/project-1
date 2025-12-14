@@ -1,0 +1,2 @@
+"0","# Draw an arrow or line to show the gap"
+"0","arrows(good_N, good_point, good_N, 5, length=0.1, col=""green4"")"

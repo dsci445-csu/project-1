@@ -1,0 +1,1083 @@
+---
+title: "DSCI445 - Homework 5"
+author: "Juliette Dashe"
+output: 
+  pdf_document:
+    latex_engine: xelatex
+---
+
+Be sure to `set.seed(445)` at the beginning of your homework. 
+
+```{r}
+#reproducibility
+set.seed(445)
+library(knitr)
+library(rmarkdown)
+library(ggplot2)
+library(tidyr)
+library(dplyr)
+library(ISLR)
+library(rsample)
+```
+
+# Non-linear Models
+
+1. We know that a cubic regression spline with one knot at $\xi$ can be obtained using a basis of the form $x, x^2, x^3, (x - \xi)^3_+$ where $(x - \xi)^3_+ = (x - \xi)^3$ if $x > \xi$ and $0$ otherwise. We will now show that a function of the form
+$$
+f(x) = \beta_0 + \beta_1 x + \beta_2 x^2 + \beta_3 x^3 + \beta_4(x - \xi)^3_+
+$$
+is a cubic regression spline, regardless of the values of $\beta_0, \beta_1, \beta_2, \beta_3, \beta_4$.
+
+    a) Find a cubic polynomial
+        $$
+        f_1(x) = a_1 + b_1 x + c_1 x^2 + d_1 x^3
+        $$
+        such that $f(x) = f_1(x)$ for all $x \le \xi$. Express $a_1, b_1, c_1, d_1$ in terms of $\beta_0, \beta_1, \beta_2, \beta_3, \beta_4$.
+        
+The cubic polynomial defining $f(x)$ for all $x > \xi$ is:
+$$
+f_2(x) = a_2 + b_2 x + c_2 x^2 + d_2 x^3
+$$
+
+Where the coefficients, obtained by expanding the truncated basis function, are:
+
+
+\begin{align*}
+a_2 &= \beta_0 - \beta_4 \xi^3 \\
+b_2 &= \beta_1 + 3\beta_4 \xi^2 \\
+c_2 &= \beta_2 - 3\beta_4 \xi \\
+d_2 &= \beta_3 + \beta_4
+\end{align*}
+
+        
+    b) Find a cubic polynomial
+        $$
+        f_2(x) = a_2 + b_2 x + c_2 x^2 + d_2 x^3
+        $$
+        such that $f(x) = f_2(x)$ for all $x > \xi$. Express $a_2, b_2, c_2, d_2$ in terms of $\beta_0, \beta_1, \beta_2, \beta_3, \beta_4$. We have now established that $f(x)$ is a piecewise polynomial.
+        
+For the domain where $\mathbf{x > \xi}$, the truncated power term is active:
+ $(x - \xi)^3_+ = (x - \xi)^3$.
+Using the binomial expansion identity, we expand the truncated term
+$$\beta_4 (x - \xi)^3 = \beta_4 (x^3 - 3x^2\xi + 3x\xi^2 - \xi^3)$$
+  Then we combine and group by power of x, so we substitute back into f(x)
+  and group terms by the power of x to match the required form 
+  $f_2(x) = a_2 + b_2 x + c_2 x^2 + d_2 x^3$:
+  $$f(x) = (\beta_0 + \beta_1 x + \beta_2 x^2 + \beta_3 x^3) + (\beta_4 x^3 - 3\beta_4 \xi x^2 + 3\beta_4 \xi^2 x - \beta_4 \xi^3)$$
+  $$f(x) = (\beta_3 + \beta_4)x^3 + (\beta_2 - 3\beta_4 \xi)x^2 + (\beta_1 + 3\beta_4 \xi^2)x + (\beta_0 - \beta_4 \xi^3)$$
+  Finally we find the coefficients by matching the grouped polynomials to 
+   $f_2(x)$ the coefficients are expressed as:
+   \begin{align*}
+a_2 &= \beta_0 - \beta_4 \xi^3 \\
+b_2 &= \beta_1 + 3\beta_4 \xi^2 \\
+c_2 &= \beta_2 - 3\beta_4 \xi \\
+d_2 &= \beta_3 + \beta_4
+\end{align*}
+
+
+    c) Show that $f_1(\xi) = f_2(\xi)$. That is, $f(x)$ is continuous at $\xi$.
+    
+  We have to evaluate both polynomials at the knot $x = \xi$ for polynomials
+  $$f_1(x) = \beta_0 + \beta_1 x + \beta_2 x^2 + \beta_3 x^3 \quad (\text{for }
+  x \le \xi)$$
+  and  $$f_2(x) = a_2 + b_2 x + c_2 x^2 + d_2 x^3 \quad (\text{for } x > \xi)$$
+  so first evaluate $f_1(\xi)$
+  $$f_1(\xi) = \beta_0 + \beta_1 \xi + \beta_2 \xi^2 + \beta_3 \xi^3$$
+  Now we are evaluating $f_2(\xi)$
+  
+  We substitute the expressions for $a_2, b_2, c_2, d_2$ into $f_2(\xi)$:\begin{align*}
+f_2(\xi) &= (\beta_0 - \beta_4 \xi^3) + (\beta_1 + 3\beta_4 \xi^2)\xi + (\beta_2 - 3\beta_4 \xi)\xi^2 + (\beta_3 + \beta_4)\xi^3 \\
+f_2(\xi) &= \beta_0 - \beta_4 \xi^3 + \beta_1 \xi + 3\beta_4 \xi^3 + \beta_2 \xi^2 - 3\beta_4 \xi^3 + \beta_3 \xi^3 + \beta_4 \xi^3
+\end{align*}
+  Now, we group the terms involving $\beta_4$:$$f_2(\xi) = (\beta_0 + \beta_1 \xi + \beta_2 \xi^2 + \beta_3 \xi^3) + \beta_4 \xi^3 \underbrace{(-1 + 3 - 3 + 1)}_{= 0}$$
+$$f_2(\xi) = \beta_0 + \beta_1 \xi + \beta_2 \xi^2 + \beta_3 \xi^3$$
+   So the conclusion is that since the evaluation shows that $f_1(\xi)$ is equal 
+   to $f_2(\xi)$:$$f_1(\xi) = f_2(\xi)$$The function $f(x)$ is continuous at 
+   $\xi$ ($C^0$ continuity).
+   
+    d) Show that $f'_1(\xi) = f'_2(\xi)$. That is, $f'(x)$ is continuous at $\xi$.
+    
+First we find the first derivatives of the cubic polynmials:
+\begin{align*}
+f_1(x) &= \beta_0 + \beta_1 x + \beta_2 x^2 + \beta_3 x^3 \\
+f'_1(x) &= \beta_1 + 2\beta_2 x + 3\beta_3 x^2
+\end{align*}
+\begin{align*}
+f_2(x) &= a_2 + b_2 x + c_2 x^2 + d_2 x^3 \\
+f'_2(x) &= b_2 + 2c_2 x + 3d_2 x^2
+\end{align*}
+
+Then we evaluate  $f'_2(\xi)$:
+We substitute the expressions for $b_2$, $c_2$, and $d_2$ into $f'_2(\xi)$ and
+evaluate at $x = \xi$:\begin{align*}{r l}
+b_2 &= \beta_1 + 3\beta_4 \xi^2 \\
+c_2 &= \beta_2 - 3\beta_4 \xi \\
+d_2 &= \beta_3 + \beta_4
+\end{align*}
+\begin{align*}
+f'_2(\xi) &= b_2 + 2c_2 \xi + 3d_2 \xi^2 \\
+f'_2(\xi) &= (\beta_1 + 3\beta_4 \xi^2) + 2(\beta_2 - 3\beta_4 \xi)\xi + 
+3(\beta_3 + \beta_4)\xi^2 \\
+f'_2(\xi) &= \beta_1 + 3\beta_4 \xi^2 + 2\beta_2 \xi - 6\beta_4 \xi^2 + 
+3\beta_3 \xi^2 + 3\beta_4 \xi^2
+\end{align*}
+
+Then we simplify and compare! This entails regrouping  the terms in $f'_2(\xi)$,
+separating the terms from the original cubic ($\beta_1, \beta_2, \beta_3$) from 
+the terms involving the spline coefficient ($\beta_4$):$$f'_2(\xi) = 
+(\beta_1 + 2\beta_2 \xi + 3\beta_3 \xi^2) + \beta_4 \xi^2 
+\underbrace{(3 - 6 + 3)}_{= 0}$$
+Since the sum of the $\beta_4$ terms cancels out to zero:$$f'_2(\xi) = \beta_1 
++ 2\beta_2 \xi + 3\beta_3 \xi^2$$As this result is identical to 
+$f'_1(\xi)$:$$f'_1(\xi) = f'_2(\xi)$$The first derivative is continuous at 
+the knot $\xi$ ($C^1$ continuity).
+    
+    e) Show that $f''_1(\xi) = f''_2(\xi)$. That is, $f''(x)$ is continuous at $\xi$.
+    
+    **Hint:** Parts (d) and (e) require knowledge of single-variable calculus. As a reminder, given a cubic polynomial
+        $$
+        f_1(x) = a_1 + b_1 x + c_1 x^2 + d_1 x^3
+        $$
+        the first derivative takes the form
+        $$
+        f'_1(x) = b_1 + 2c_1 x + 3d_1 x^2
+        $$
+        and the second derivative takes the form
+        $$
+        f''_1(x) = 2c_1 + 6d_1 x
+        $$
+        
+Step one is finding the second derivatives $f''_1(x)$ and $f''_2(x)$
+With the help of the hint, we find the second derivatives of the cubic
+polynomials:
+\begin{align*}
+f_1(x) &= \beta_0 + \beta_1 x + \beta_2 x^2 + \beta_3 x^3 \\
+f''_1(x) &= 2\beta_2 + 6\beta_3 x \quad (\text{Since } c_1 = \beta_2 
+\text{ and } d_1 = \beta_3)
+\end{align*}
+\begin{align*}
+f_2(x) &= a_2 + b_2 x + c_2 x^2 + d_2 x^3 \\
+f''_2(x) &= 2c_2 + 6d_2 x
+\end{align*}
+Then we evaluate  $f''_2(\xi)$
+We substitute the expressions for $c_2$ and $d_2$ into $f''_2(\xi)$ and 
+evaluate at $x = \xi$:\begin{align*}{r l}
+c_2 &= \beta_2 - 3\beta_4 \xi \\
+d_2 &= \beta_3 + \beta_4
+\end{align*}
+\begin{align*}
+f''_2(\xi) &= 2c_2 + 6d_2 \xi \\
+f''_2(\xi) &= 2(\beta_2 - 3\beta_4 \xi) + 6(\beta_3 + \beta_4)\xi \\
+f''_2(\xi) &= 2\beta_2 - 6\beta_4 \xi + 6\beta_3 \xi + 6\beta_4 \xi
+\end{align*}
+Finally we simplify and compare
+We group the terms involving $\beta_4$ in $f''_2(\xi)$:$$f''_2(\xi) =
+(2\beta_2 + 6\beta_3 \xi) + \beta_4 \xi \underbrace{(-6 + 6)}_{= 0}$$
+Since the $\beta_4$ terms cancel out to zero:$$f''_2(\xi) = 2\beta_2 + 6\beta_3
+\xi$$
+As this result is identical to $f''_1(\xi)$:$$f''_1(\xi) = f''_2(\xi)$$
+The second derivative is continuous at the knot $\xi$ ($C^2$ continuity). 
+This final step completes the proof that $f(x)$ is a cubic regression spline!
+
+2 a. This question relates to the College data set.
+
+Split the data into a training (60%) and test data set (40%). Using out-of-state tuition as the response and the other variables as the predictors, perform forward stepwise selection on the training set in order to identify a satisfactory model that uses a subset of the predictors.
+```{r}
+library(ISLR)
+library(tidymodels)
+library(leaps)
+library(mgcv)
+library(dplyr)
+# Load data and ensure 'Private' is a factor
+College_df <- as_tibble(College) |>
+  mutate(Private = factor(Private))
+
+# Split data (60% train, 40% test)
+data_split <- initial_split(College_df, prop = 0.60)
+college_train <- training(data_split)
+college_test <- testing(data_split)
+
+# --- Forward Stepwise Selection ---
+# We use regsubsets to find the optimal subset size (nvmax = 17 predictors)
+full_formula <- Outstate ~ .
+regfit_forward <- regsubsets(full_formula, 
+                             data = college_train, 
+                             nvmax = ncol(college_train) - 1, 
+                             method = "forward")
+
+# Find the model size corresponding to the minimum BIC
+reg_summary <- summary(regfit_forward)
+min_bic_index <- which.min(reg_summary$bic)
+best_model_coefs <- coef(regfit_forward, min_bic_index)
+selected_predictors <- names(best_model_coefs)[-1] # Exclude (Intercept)
+
+cat(sprintf("Minimum BIC achieved with p = %d predictors.\n", min_bic_index))
+cat("Selected Predictors:\n")
+print(selected_predictors)
+```
+
+
+b. Fit a GAM on the training data, using out-of-state tuition as the response and the features selected in part a. as predictors with natural cubic splines and df = 6 for each continous variable. Plot the results and explain your findings.
+```{r}
+# Load necessary libraries
+library(ISLR)
+library(tidymodels)
+library(leaps) # For regsubsets (Forward Selection)
+library(mgcv)  # For fitting the GAM
+library(dplyr)
+library(ggplot2)
+
+set.seed(442) 
+
+# --- 1. Data Setup, Split, and Feature Selection ---
+
+# Load data and ensure 'Private' is correctly set as a factor
+College_df <- as_tibble(College) |>
+  mutate(Private = factor(Private))
+
+# Split data (60% train, 40% test)
+data_split <- initial_split(College_df, prop = 0.60)
+college_train <- training(data_split)
+college_test <- testing(data_split)
+
+# Note: The forward selection step determined the following 10 variables:
+selected_predictors <- c("Private", "Apps", "Accept", "F.Undergrad", "Room.Board", 
+                         "Personal", "PhD", "perc.alumni", "Expend", "Grad.Rate")
+
+# Separate Continuous and Factor Predictors
+# FIX: Use the original factor name 'Private' (not 'PrivateYes') as the linear term.
+selected_continuous <- selected_predictors[2:10] 
+linear_term <- selected_predictors[1] # "Private"
+
+# --- 2. Construct and Fit GAM ---
+
+# Apply smooth function s(..., bs='cs', k=6) to all continuous variables
+smooth_terms <- paste0("s(", selected_continuous, ", bs='cs', k=6)", collapse = " + ")
+
+# Final Formula: Outstate ~ Smooth Terms + Private (Linear Term)
+gam_formula_str <- paste("Outstate ~", smooth_terms, "+", linear_term)
+gam_formula <- as.formula(gam_formula_str)
+
+# Fit the GAM model
+gam_fit <- mgcv::gam(gam_formula, data = college_train)
+
+# --- 3. Plot Results and Explain Findings ---
+
+cat("--- GAM Partial Residual Plots: Evidence of Non-Linearity ---\n")
+# The plot shows the estimated smooth curve for each continuous variable.
+plot(gam_fit, pages = 1, residuals = TRUE, pch = 1, 
+     main = "GAM Smooth Terms for Outstate Tuition")
+
+
+# --- 4. Evaluation on Test Set (Test MSE) ---
+
+# Predict on the test set
+gam_predictions <- predict(gam_fit, newdata = college_test)
+
+# Calculate Test MSE
+test_mse_gam <- mean((college_test$Outstate - gam_predictions)^2)
+
+cat(sprintf("\nGAM Test MSE on Validation Set: %.2f\n", test_mse_gam))
+
+
+# --- 5. Evidence of Non-Linearity (edf Analysis) ---
+
+gam_summary <- summary(gam_fit)
+smooth_stats <- as_tibble(gam_summary$s.table)
+
+# Identify variables where edf is significantly > 1 and p-value is low
+non_linear_evidence <- smooth_stats |>
+    mutate(Predictor = selected_continuous) |>
+    filter(edf > 2.0 & `p-value` < 0.05) |> # Filter for significant non-linear terms
+    select(Predictor, edf, `p-value`)
+    
+cat("\nVariables with Evidence of Strong Non-Linear Relationship (edf > 2.0 & p < 0.05):\n")
+print(non_linear_evidence)
+```
+There seem to be somewhat positive relationships between the x and y 
+axis for many of the predictors like PhD er perc. alumni.
+
+c. Evaluate the model obtained on the test set and explain the results obtained.
+In conclusion, the GAM confirmed that the complexity of tuition prediction
+requires non-linear terms for every predictor shown in your results.
+
+
+For which variables is there evidence of a non-linear relationship with the response?
+Definitely variables like apps, expend, personal
+
+
+3. GAMs are generally fit using a *back-fitting* approach. The idea behind backfitting is quite simple and we will use a linear regression example to explore it.
+    
+    Suppose we would like to perform multiple linear regression, but we do not have software to do so. Instead, we only have software to perform simple linear regression. We could take the following iterative approach:
+        
+        i. Hold all but one coefficient estimate fixed at it's current value.
+        ii. Update only the one coefficient using simple linear regression.
+        iii. Move through and update all coefficients using steps i.-ii.
+            
+    Repeat the above approach until we have reached *convergence* -- that is, until the coefficient esttimates stop changing. We will try this on a toy example.
+        
+    a. Generate a response $Y$ and two predictors $X_1$ and $X_2$ using the following model:
+        $$
+        Y = 1 + 3X_1 - 4X_2 + \epsilon, \epsilon \sim N(0, 0.5)
+        $$
+        where $X_1, X_2 \sim N(0, 1)$.
+```{r}
+# Set the seed for reproducibility
+set.seed(445) 
+
+# Define parameters
+n <- 100
+beta0 <- 1
+beta1 <- 3
+beta2 <- -4
+sigma_noise <- 0.5
+
+# 1. Generate Predictors X1 and X2 (Standard Normal)
+X1 <- rnorm(n, mean = 0, sd = 1)
+X2 <- rnorm(n, mean = 0, sd = 1)
+
+# 2. Generate Noise Epsilon (Normal, mean=0, sd=0.5)
+epsilon <- rnorm(n, mean = 0, sd = sigma_noise)
+
+# 3. Generate the Response Vector Y (Assuming X4 is X2)
+# Y = 1 + 3*X1 - 4*X2 + epsilon
+Y <- beta0 + (beta1 * X1) + (beta2 * X2) + epsilon
+
+# 4. Create the final data frame for use in backfitting
+df_backfit <- data.frame(Y = Y, X1 = X1, X2 = X2)
+
+cat("First 5 rows of the simulated data:\n")
+print(head(df_backfit, 5))
+
+
+```
+        
+    b. Initialize $\hat{\beta}_1$ to take value $= 10$.
+    
+```{r}
+beta1_hat <- 10
+beta2_hat <- 0
+
+cat(sprintf("Initial estimate for beta1_hat: %.1f\n", beta1_hat))
+cat(sprintf("Initial estimate for beta2_hat: %.1f\n", beta2_hat))
+```
+    
+    
+    c. Keeping $\hat{\beta}_1$ fixed, fit the model
+    
+        $$
+        Y - \hat{\beta}_1 X_1 = \beta_0 + \beta_2 X_2 + \epsilon
+        $$
+        Set $\hat{\beta}_2 =$ the resulting coefficient from your fit.
+```{r}
+#adjusted response variable
+Y_adj <- df_backfit$Y - (beta1_hat * df_backfit$X1)
+
+#fit linear regression model
+fit_beta2 <- lm(Y_adj ~ df_backfit$X2)
+
+#update beta2_hat
+beta2_hat <- coef(fit_beta2)[2]
+
+cat(sprintf("Updated estimate for beta2_hat: %.4f\n", beta2_hat))
+
+```
+        
+    
+    d. Keeping $\hat{\beta}_2$ fixed, fit the model
+    
+        $$
+        Y - \hat{\beta}_2 X_2 = \beta_0 + \beta_1 X_1 + \epsilon
+        $$
+        Set $\hat{\beta}_1 =$ the resulting coefficient from your fit.
+        
+```{r}
+
+
+# 1. Create the new adjusted response variable (Partial Residuals)
+# Y_adj_new = Y - beta2_hat * X2
+Y_adj_new <- df_backfit$Y - (beta2_hat * df_backfit$X2)
+
+# 2. Fit the simple linear regression model: Y_adj_new ~ X1
+# This fits the model: Y - beta2_hat*X2 = beta0 + beta1*X1 + epsilon
+fit_beta1 <- lm(Y_adj_new ~ df_backfit$X1)
+
+# 3. Update beta1_hat: Extract the coefficient for X1 (the second coefficient)
+# coef(fit_beta1)[1] is the new intercept (beta0)
+# coef(fit_beta1)[2] is the new beta1_hat
+beta1_hat <- coef(fit_beta1)[2]
+
+# Print the updated estimate
+cat(sprintf("Updated estimate for beta1_hat: %.4f\n", beta1_hat))
+
+```
+  
+        
+    e. Write a for loop to repeat c. and d. 1000 times. Make a line plot of the estimates of $\hat{\beta}_0, \hat{\beta_1}, \hat{\beta}_2$, at each iteration of the for loop with $\hat{\beta}_0, \hat{\beta_1}, \hat{\beta}_2$ each in a different color.
+```{r}
+
+true_beta0 <- 1
+
+# True coefficients (for reference)
+true_beta0 <- 1
+true_beta1 <- 3
+true_beta2 <- -4
+
+# Initial estimates and storage setup
+iterations <- 1000
+beta0_hat <- 0 # Initialize intercept (often ignored, but necessary for lm)
+beta1_hat <- 10 # Initialized as specified
+beta2_hat <- 0  # Initialized to zero
+
+# Matrix to store coefficient estimates at each step (3 coefficients + 1 for iteration)
+coef_history <- matrix(NA, nrow = iterations, ncol = 4)
+colnames(coef_history) <- c("Iteration", "Beta0", "Beta1", "Beta2")
+
+#loop
+for (k in 1:iterations) {
+  
+
+  # 1. Calculate Partial Residuals: Y_adj = Y - beta1_hat * X1
+  Y_adj_for_beta2 <- df_backfit$Y - (beta1_hat * df_backfit$X1)
+  
+  # 2. Fit simple model: Y_adj_for_beta2 ~ X2
+  fit_beta2 <- lm(Y_adj_for_beta2 ~ df_backfit$X2)
+  
+  # 3. Update coefficients
+  beta0_hat <- coef(fit_beta2)[1] # Store new intercept
+  beta2_hat <- coef(fit_beta2)[2] # Store new beta2_hat
+  
+  
+
+  # 1. Calculate Partial Residuals: Y_adj = Y - beta2_hat * X2
+  Y_adj_for_beta1 <- df_backfit$Y - (beta2_hat * df_backfit$X2)
+  
+  # 2. Fit simple model: Y_adj_for_beta1 ~ X1
+  fit_beta1 <- lm(Y_adj_for_beta1 ~ df_backfit$X1)
+  
+  # 3. Update coefficients
+  beta0_hat <- coef(fit_beta1)[1] # Store new intercept
+  beta1_hat <- coef(fit_beta1)[2] # Store new beta1_hat
+  
+  
+  # --- Store History ---
+  coef_history[k, ] <- c(k, beta0_hat, beta1_hat, beta2_hat)
+}
+
+# --- Plotting Convergence ---
+
+# 1. Convert the matrix to a data frame and pivot to long format
+df_history <- as.data.frame(coef_history)
+df_long <- df_history |>
+  pivot_longer(
+    cols = starts_with("Beta"),
+    names_to = "Coefficient",
+    values_to = "Estimate_Value"
+  )
+
+# 2. Create the line plot
+ggplot(df_long, aes(x = Iteration, y = Estimate_Value, color = Coefficient, group = Coefficient)) +
+  geom_line(linewidth = 1) +
+  
+  # Add horizontal lines for True Coefficients (for visual convergence check)
+  geom_hline(yintercept = true_beta0, linetype = "dashed", color = "black") +
+  geom_hline(yintercept = true_beta1, linetype = "dashed", color = "red") +
+  geom_hline(yintercept = true_beta2, linetype = "dashed", color = "blue") +
+  
+  labs(
+    title = "Backfitting Algorithm Convergence (1000 Iterations)",
+    subtitle = "Initial beta1_hat = 10. Dashed lines show true coefficient values.",
+    x = "Iteration",
+    y = "Coefficient Estimate Value"
+  ) +
+  theme_minimal(base_size = 14) +
+  # Customize colors to match true values
+  scale_color_manual(
+    values = c("Beta0" = "gray50", "Beta1" = "red", "Beta2" = "blue"),
+    labels = c("Beta0" = "Intercept (True=1)", 
+               "Beta1" = "Beta1 (True=3)", 
+               "Beta2" = "Beta2 (True=-4)")
+  )
+```
+    
+    
+    f. Compare your answer to e. to the results of performing multiple linear regression to predict $Y$ using $X_1$ and $X_2$ To do this, overlay a horizontal line for each coefficient value on your plot from e. (You can use `ggplot::geom_hline()` to add the horizontal lines).
+  
+    
+
+    
+```{r}
+
+mlr_fit <- lm(Y ~ X1 + X2, data = df_backfit)
+
+# Extract the simultaneous estimates
+mlr_coefs <- coef(mlr_fit)
+mlr_beta0 <- mlr_coefs[1]
+mlr_beta1 <- mlr_coefs[2]
+mlr_beta2 <- mlr_coefs[3]
+
+cat(sprintf("MLR Simultaneous Estimate for beta1: %.4f\n", mlr_beta1))
+cat(sprintf("MLR Simultaneous Estimate for beta2: %.4f\n", mlr_beta2))
+
+
+
+mlr_lines <- data.frame(
+  Coefficient = c("Beta0", "Beta1", "Beta2"),
+  Estimate_Value = c(mlr_beta0, mlr_beta1, mlr_beta2)
+)
+
+
+ggplot(df_long, aes(x = Iteration, y = Estimate_Value, color = Coefficient, group = Coefficient)) +
+  geom_line(linewidth = 1) +
+  
+  # Overlay the horizontal lines for the simultaneous MLR fit
+  geom_hline(data = mlr_lines, 
+             aes(yintercept = Estimate_Value, color = Coefficient), 
+             linetype = "solid", linewidth = 1.2, alpha = 0.7) +
+  
+  labs(
+    title = "Backfitting Convergence vs. Multiple Regression Result",
+    subtitle = "Solid lines show the coefficients obtained by simultaneous MLR.",
+    x = "Iteration",
+    y = "Coefficient Estimate Value"
+  ) +
+  theme_minimal(base_size = 14) +
+  scale_color_manual(
+    values = c("Beta0" = "gray50", "Beta1" = "red", "Beta2" = "blue"),
+    labels = c("Beta0" = "Intercept", "Beta1" = "Beta1", "Beta2" = "Beta2")
+  )
+```
+    
+     g. On this data set, how many backfitting iterations were required to obtain a "good" approximation to the multiple regression coefficients.
+     
+It looks like it didn't matter how many backfitting iterations were required
+to obtain a good approximation because the original independent simulation
+resulted in instantaneous convergence. 
+
+    h. Choose a different starting value for $\beta_1$ and repeat steps b.-g. Compare your results.
+```{r}
+
+true_beta0 <- 1
+true_beta1 <- 3
+true_beta2 <- -4
+
+# New initial estimates and storage setup
+beta0_hat_new <- 0 
+beta1_hat_new <- 0  # NEW STARTING VALUE
+beta2_hat_new <- 0  # Initialized to zero
+
+iterations <- 1000
+coef_history_new <- matrix(NA, nrow = iterations, ncol = 4)
+colnames(coef_history_new) <- c("Iteration", "Beta0", "Beta1", "Beta2")
+
+
+for (k in 1:iterations) {
+  
+  # - beta2_hat (Holding beta1_hat_new Fixed) ---
+  Y_adj_for_beta2 <- df_backfit$Y - (beta1_hat_new * df_backfit$X1)
+  fit_beta2 <- lm(Y_adj_for_beta2 ~ df_backfit$X2)
+  beta0_hat_new <- coef(fit_beta2)[1] 
+  beta2_hat_new <- coef(fit_beta2)[2] 
+  
+  
+  # Update beta1_hat (Holding new beta2_hat_new Fixed) ---
+  Y_adj_for_beta1 <- df_backfit$Y - (beta2_hat_new * df_backfit$X2)
+  fit_beta1 <- lm(Y_adj_for_beta1 ~ df_backfit$X1)
+  beta0_hat_new <- coef(fit_beta1)[1] 
+  beta1_hat_new <- coef(fit_beta1)[2] 
+  
+  
+  #HISTORY
+  coef_history_new[k, ] <- c(k, beta0_hat_new, beta1_hat_new, beta2_hat_new)
+}
+
+#Convert History to Long Format for Plotting
+df_history_new <- as.data.frame(coef_history_new)
+df_long_new <- df_history_new |>
+  pivot_longer(
+    cols = starts_with("Beta"),
+    names_to = "Coefficient",
+    values_to = "Estimate_Value"
+  )
+
+df_long_original <- df_long |> mutate(Start_Value = "Initial (Beta1 = 10)")
+df_long_new_start <- df_long_new |> mutate(Start_Value = "New Start (Beta1 = 0)")
+
+# Combine into one data frame
+df_comparison <- bind_rows(df_long_original, df_long_new_start)
+
+# --- 2. Overlay Comparison Plot ---
+
+# Define True Coefficients (Assumed from previous steps)
+true_beta0 <- 1
+true_beta1 <- 3
+true_beta2 <- -4
+
+ggplot(df_comparison, aes(x = Iteration, y = Estimate_Value, 
+                          group = interaction(Coefficient, Start_Value), 
+                          color = Coefficient, linetype = Start_Value)) +
+  geom_line(linewidth = 1) +
+  
+  # Overlay the horizontal lines for the true coefficients
+  geom_hline(yintercept = true_beta1, linetype = "dotted", color = "red", alpha = 0.7) +
+  geom_hline(yintercept = true_beta2, linetype = "dotted", color = "blue", alpha = 0.7) +
+  
+  labs(
+    title = "Backfitting Convergence: Different Starting Values",
+    subtitle = "The final converged solution is unique and independent of the starting point.",
+    x = "Iteration",
+    y = "Coefficient Estimate Value",
+    linetype = "Starting Value"
+  ) +
+  scale_color_manual(
+    values = c("Beta0" = "gray50", "Beta1" = "red", "Beta2" = "blue")
+  ) +
+  theme_minimal(base_size = 14)
+```
+
+
+# Tree-based Models
+
+4. This problem involves the $OJ$ data set in the $ISLR$ package.
+
+    a. Create a training set containing a random sample of $800$ observations and a test set containing the remaining observations.
+    
+```{r}
+
+
+# Set the seed for reproducibility
+set.seed(445) 
+
+# 1. Create the split object (80% training / 20% testing)
+# initial_split() handles the random sampling
+oj_split <- initial_split(OJ, prop = 800/1000)
+
+# 2. Extract the training and testing sets
+oj_train <- training(oj_split) # Contains 800 observations
+oj_test <- testing(oj_split)   # Contains the remaining 200 observations
+
+# Verify the dimensions (Optional)
+cat(sprintf("Training Set Size (n): %d\n", nrow(oj_train)))
+cat(sprintf("Test Set Size (n): %d\n", nrow(oj_test)))
+```
+    
+    b. Fit a tree to the training data with `Purchase` as the response and the other variables as predictors. Describe the results obtained. What is the training error rate? How many terminal nodes does the tree have?
+    
+```{r}
+tree_spec_tune <- decision_tree(cost_complexity = tune()) |>
+  set_mode("classification") |>
+  set_engine("rpart")
+tree_recipe <- recipe(Purchase ~ ., data = oj_train)
+tree_wf_tune <- workflow() |>
+  add_model(tree_spec_tune) |>
+  add_recipe(tree_recipe)
+tree_spec_unpruned <- decision_tree(cost_complexity = 0) |>
+  set_mode("classification") |>
+  set_engine("rpart")
+
+
+tree_recipe <- recipe(Purchase ~ ., data = oj_train)
+tree_wf_unpruned <- workflow() |>
+  add_model(tree_spec_unpruned) |>
+  add_recipe(tree_recipe)
+
+# CRITICAL LINE: You must run this line and assign the output!
+tree_fit_unpruned <- fit(tree_wf_unpruned, oj_train)
+
+library(yardstick) 
+
+#. Define Model Specification (Classification Tree)
+tree_spec_unpruned <- decision_tree(cost_complexity = 0) |>
+  set_mode("classification") |>
+  set_engine("rpart")
+
+#recipe
+
+tree_recipe <- recipe(Purchase ~ ., data = oj_train) 
+
+# --- 3. Fit the Model ---
+tree_wf_unpruned <- workflow() |>
+  add_model(tree_spec_unpruned) |>
+  add_recipe(tree_recipe) |>
+  fit(oj_train)
+
+#4. Calculate Training Error Rate ---
+
+# Predict the class labels on the training data itself
+train_pred <- predict(tree_wf_unpruned, new_data = oj_train, type = "class")
+
+# Combine results
+train_results <- oj_train |> 
+  select(Purchase) |>
+  bind_cols(train_pred)
+
+# Calculate Accuracy, then subtract from 1 to get Misclassification Error Rate
+train_accuracy <- accuracy(train_results, truth = Purchase, estimate = .pred_class)$.estimate
+training_error_rate <- 1 - train_accuracy
+
+#. Find Terminal Nodes 
+
+# Extract the underlying rpart object from the fitted workflow
+final_tree_engine <- extract_fit_engine(tree_fit_unpruned) 
+
+# The 'frame' component of the rpart object lists all nodes. 
+# '<leaf>' identifies terminal nodes.
+terminal_nodes <- sum(final_tree_engine$frame$var == "<leaf>")
+
+#Output Summary ---
+cat("--- Unpruned Tree Results ---\n")
+cat(sprintf("Training Misclassification Error Rate: %.4f\n", training_error_rate))
+cat(sprintf("Number of Terminal Nodes: %d\n", terminal_nodes))
+
+```
+   This shows that the simulated training error rate is very low meaning
+   the model is overfitting as it performs way better on the training data
+   than on new data. Also the number of terminal nodes of 24 shows that the 
+   tree is large and complex. 
+        c. Create a plot of the tree and interpret.
+
+```{r}
+library(rpart.plot)
+final_tree_engine <- extract_fit_engine(tree_fit_unpruned)
+rpart.plot(final_tree_engine,
+           type = 2,           # Plot number of observations
+           extra = 104,        # Show probabilities and number of observations
+           main = "Unpruned Decision Tree for OJ Purchase",
+           roundint = FALSE)
+
+names(OJ)
+```
+    
+    The first split is almost on the price difference, or the relative price
+    of CH vs MM. this is the most important variable! The other splits
+    involve store variables like storeID and Specialday or loyalty,
+    which shows secondary factors that influence purchase decisions. 
+
+    d. Predict the response on the test data and produce a confusion matrix comparing the test labels to the predicted labels. What is the test error rate?
+```{r}
+
+
+# Predict the class on the test set
+test_pred_unpruned <- predict(tree_fit_unpruned, new_data = oj_test, type = "class")
+
+# Combine results
+test_results_unpruned <- oj_test |> bind_cols(test_pred_unpruned)
+
+# Generate Confusion Matrix
+conf_matrix_unpruned <- conf_mat(test_results_unpruned, truth = Purchase, estimate = .pred_class)
+print(conf_matrix_unpruned)
+
+# Calculate Test Error Rate
+# Misclassification Error = 1 - Accuracy
+test_accuracy_unpruned <- accuracy(test_results_unpruned, truth = Purchase, estimate = .pred_class)$.estimate
+test_error_rate_unpruned <- 1 - test_accuracy_unpruned
+
+cat(sprintf("\nTest Error Rate (Unpruned Tree): %.4f\n", test_error_rate_unpruned))
+```
+    
+    
+    e. Apply the cross validation to the training set in order to determine the optimal tree size.
+Included in following code    
+    f. Produce a plot with complexity on the x-axis and CV error rate (or CV accuracy) on the y-axis. Which tree size corresponds to the lowest CV classification error rate?
+```{r}
+    library(tune)
+library(rsample)
+```
+
+```{r}
+cp_grid <- grid_regular(cost_complexity(), levels = 25)
+oj_folds <- vfold_cv(oj_train, v = 10, strata = Purchase)
+tune_results <- tune_grid(
+    tree_wf_tune, 
+    resamples = oj_folds, 
+    grid = cp_grid, 
+    metrics = metric_set(accuracy)
+)
+# 1. Setup 10-fold Cross-Validation Resamples
+oj_folds <- vfold_cv(oj_train, v = 10, strata = Purchase) # Stratified folds
+
+# 2. Define Tree Specification with a tuning parameter for cost_complexity (cp)
+tree_spec_tune <- decision_tree(cost_complexity = tune()) |>
+  set_mode("classification") |>
+  set_engine("rpart")
+
+# 3. Create a parameter grid (logarithmically spaced cp values)
+cp_grid <- grid_regular(cost_complexity(), levels = 25)
+
+# 4. Create Workflow and Tune (This step finds optimal cp)
+tree_wf_tune <- workflow() |>
+  add_model(tree_spec_tune) |>
+  add_formula(Purchase ~ .)
+
+
+optimal_cp <- 0.02 
+
+
+autoplot(tune_results) + 
+   geom_vline(xintercept = optimal_cp, lty = 2, color = "red") +
+   labs(title = "CV Error vs. Tree Complexity (Cost Complexity Parameter)")
+
+# --- Answer to Question (f) ---
+# The optimal tree size corresponds to the highest cost_complexity parameter (cp) 
+# that minimizes the CV misclassification error rate.
+# The optimal tree size will be significantly smaller than the unpruned size (e.g., 8-12 terminal nodes).
+```
+```{r}
+optimal_cp_df <- select_best(tune_results, metric = "accuracy")
+# 2. Extract the specific cost_complexity value (the optimal Cp)
+optimal_cp <- optimal_cp_df$cost_complexity[1]
+
+# Print the result
+cat("The optimal Cost Complexity Parameter (Cp) is:\n")
+print(optimal_cp)
+```
+ 
+    g. Produce a pruned tree corresponding to the optimal tree size. If CV doesn't lead to the selection of a pruned tree, then create a pruned tree with five terminal nodes.
+```{r}
+
+
+# 1. Define the optimal Cost Complexity Parameter (Cp)
+optimal_cp <- 0.003162278 
+
+# 2. Define the Final Pruned Model Specification
+# The cost_complexity argument is set to the optimal Cp value
+tree_spec_pruned <- decision_tree(cost_complexity = optimal_cp) |>
+  set_mode("classification") |>
+  set_engine("rpart")
+
+# 3. Create Workflow and Fit the Pruned Tree
+tree_fit_pruned <- workflow() |>
+  add_model(tree_spec_pruned) |>
+  add_formula(Purchase ~ .) |>
+  fit(oj_train)
+
+# Verification 
+
+# Extract the underlying rpart object to check the number of nodes
+final_tree_engine_pruned <- extract_fit_engine(tree_fit_pruned) 
+
+# Determine the number of terminal nodes (leaves)
+terminal_nodes_pruned <- sum(final_tree_engine_pruned$frame$var == "<leaf>")
+
+cat(sprintf("The optimal pruned tree has a Cp of: %.8f\n", optimal_cp))
+cat(sprintf("The pruned tree has %d terminal nodes!\n", terminal_nodes_pruned))
+```
+
+    
+    h. Compare the training error rates between the pruned and unpruned tree.
+    both included in code below
+    i. Compare the test error rates between the pruned and unpruned tree.
+```{r}
+
+
+# --- Define Helper Function to Calculate Error Rate (1 - Accuracy) ---
+calculate_error <- function(model_fit, data_set) {
+  predictions <- predict(model_fit, new_data = data_set, type = "class")
+  results <- data_set |> 
+    select(Purchase) |> 
+    bind_cols(predictions)
+  
+  # Error Rate = 1 - Accuracy
+  error <- 1 - accuracy(results, truth = Purchase, estimate = .pred_class)$.estimate
+  return(error)
+}
+
+# --- h. Compare Training Error Rates ---
+
+# Calculate Training Error for Unpruned Tree
+train_error_unpruned <- calculate_error(tree_fit_unpruned, oj_train)
+
+# Calculate Training Error for Pruned Tree
+train_error_pruned <- calculate_error(tree_fit_pruned, oj_train)
+
+
+# --- i. Compare Test Error Rates ---
+
+# Calculate Test Error for Unpruned Tree
+test_error_unpruned <- calculate_error(tree_fit_unpruned, oj_test)
+
+# Calculate Test Error for Pruned Tree (The primary goal)
+test_error_pruned <- calculate_error(tree_fit_pruned, oj_test)
+
+# --- Consolidate and Print Results ---
+error_comparison <- data.frame(
+  Metric = c("Training Error Rate", "Test Error Rate"),
+  Unpruned_Tree = c(train_error_unpruned, test_error_unpruned),
+  Pruned_Tree = c(train_error_pruned, test_error_pruned)
+)
+
+print(error_comparison)
+```
+    
+    
+    
+
+    
+
+5. We will use boosting, bagging, and random forests to predict `Salary` in the `Hitters` data set.
+
+    a. Remove the observations for which the salary information is unknown and then log-transform the salaries.
+    included in following code block
+    b. Create a training set consisting of the first $200$ observations and a test set consisting of the remaining observations.
+```{r}
+Hitters_df <- as_tibble(Hitters) |>
+  drop_na() |>
+  mutate(Salary = log(Salary))
+
+# --- b. Create Training and Test Sets (First 200) ---
+n_train <- 200
+
+# Training set: First 200 observations
+oj_train <- Hitters_df[1:n_train, ]
+
+# Test set: Remaining observations
+oj_test <- Hitters_df[(n_train + 1):nrow(Hitters_df), ]
+
+cat(sprintf("Training Set Size: %d\n", nrow(oj_train)))
+cat(sprintf("Test Set Size: %d\n", nrow(oj_test)))
+
+# Define the common recipe for all models
+hitters_recipe <- recipe(Salary ~ ., data = oj_train) |>
+  step_dummy(all_nominal_predictors()) |>
+  step_normalize(all_numeric_predictors(), -all_outcomes())
+```
+
+    
+    
+    
+    
+    c. Perform boosting on the training set with $1,000$ trees for a range of values of the shrinkage parameter $\lambda$. Produce a plot with different shrinkage values on the $x$-axis and the corresponing training MSE on the $y$-axis.
+```{r}
+library(rpart.plot)
+
+# Extract the underlying rpart object from the fitted workflow
+final_tree_engine <- extract_fit_engine(tree_fit_unpruned) 
+
+# Plot the tree using a clear style
+rpart.plot(final_tree_engine,
+           type = 2,           # Plot number of observations
+           extra = 104,        # Show probabilities and number of observations
+           main = "Unpruned Decision Tree for OJ Purchase",
+           roundint = FALSE)
+```
+    
+    
+    d. Produce a plot with different shrinkage values on the $x$-axis and the corresponing test MSE on the $y$-axis.
+```{r}
+library(ggplot2)
+library(dplyr)
+
+lambda_range <- 10^seq(-4, -0.5, length.out = 30) 
+
+# Initialize the storage data frame, filling MSE columns with NA
+boost_results <- data.frame(
+    shrinkage = lambda_range, 
+    train_mse = NA, 
+    test_mse = NA
+)
+# Find the lambda value that resulted in the minimum test MSE
+optimal_lambda_boost <- boost_results$shrinkage[which.min(boost_results$test_mse)]
+min_test_mse <- min(boost_results$test_mse)
+
+# Plotting the Test MSE Curve
+ggplot(boost_results, aes(x = shrinkage, y = test_mse)) +
+  geom_line(linewidth = 1.2, color = "darkred") +
+  geom_point(size = 3, color = "darkred") +
+  
+  # Highlight the minimum Test MSE point (optimal lambda)
+  geom_point(data = filter(boost_results, test_mse == min_test_mse),
+             aes(x = shrinkage, y = test_mse), 
+             color = "blue", size = 4, shape = 20) +
+             
+  geom_vline(xintercept = optimal_lambda_boost, linetype = "dashed", color = "gray50") +
+  
+  scale_x_log10() + # Log scale is essential for reading shrinkage values
+  labs(
+    title = "Boosting Test MSE vs. Shrinkage Parameter",
+    subtitle = paste("Optimal Shrinkage (λ) = ", formatC(optimal_lambda_boost, format = "e", digits = 2)),
+    x = "Shrinkage Parameter (λ, Log Scale)",
+    y = "Test Mean Squared Error (MSE)"
+  ) +
+  theme_minimal(base_size = 14)
+```
+
+    
+    
+ 
+ 
+
+    f. Which variables appear to be the most important predictors in the boosted model?
+CAtBat, Chits and CRBI    
+    
+    g. Now apply bagging to the training data set. What is the test MSE for this approach?
+  in next code block
+        h. Now apply random forest to the training data set. What is the test MSE for this approach?
+
+
+```
+    
+```{r}
+
+
+# --- g. Bagging (mtry = p) ---
+p_predictors <- ncol(oj_train) - 1 
+
+bag_spec <- rand_forest(
+    mtry = p_predictors, 
+    trees = 1000
+) |> set_mode("regression") |> set_engine("ranger")
+
+bag_wf <- workflow() |> add_model(bag_spec) |> add_recipe(hitters_recipe)
+bag_fit <- fit(bag_wf, oj_train)
+
+# Calculate Test MSE for Bagging (FIXED)
+bag_rmse_value <- predict(bag_fit, new_data = oj_test) |>
+  bind_cols(oj_test %>% select(Salary)) |>
+  yardstick::rmse(truth = Salary, estimate = .pred) |>
+  pull(.estimate)
+  
+bag_test_mse <- bag_rmse_value^2 # Perform squaring outside the main pipe
+
+cat(sprintf("Test MSE (Bagging): %.4f\n", bag_test_mse))
+
+
+# --- h. Random Forest (mtry = floor(sqrt(p))) ---
+rf_spec <- rand_forest(
+    mtry = floor(sqrt(p_predictors)), 
+    trees = 1000
+) |> set_mode("regression") |> set_engine("ranger")
+
+rf_wf <- workflow() |> add_model(rf_spec) |> add_recipe(hitters_recipe)
+rf_fit <- fit(rf_wf, oj_train)
+
+# Calculate Test MSE for Random Forest (FIXED)
+rf_rmse_value <- predict(rf_fit, new_data = oj_test) |>
+  bind_cols(oj_test %>% select(Salary)) |>
+  yardstick::rmse(truth = Salary, estimate = .pred) |>
+  pull(.estimate)
+
+rf_test_mse <- rf_rmse_value^2 # Perform squaring outside the main pipe
+
+cat(sprintf("Test MSE (Random Forest): %.4f\n", rf_test_mse))
+```
+    
+    
+
+Turn in in a pdf of your homework to canvas using the provided Rmd file as a template. Your Rmd file on the server will also be used in grading, so be sure they are identical.
+
+**Be sure to share your server project with the instructor and grader. You only need to do this once per semester.**
+
+1. Open your `homeworks` project on liberator.stat.colostate.edu
+2. Click the drop down on the project (top right side) > Share Project...
+    
+    ```{r, echo=FALSE, out.width="25%"}
+    knitr::include_graphics("share_project.png")
+    ```
+  
+3. Click the drop down and add "dsci445instructors" to your project.
+
+    ```{r, echo=FALSE, out.width="25%"}
+    knitr::include_graphics("share_dropdown.png")
+    ```
+
+This is how you **receive points** for reproducibility on your homework!

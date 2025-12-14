@@ -1,0 +1,4 @@
+"0","library(readr)"
+"0","nfl_sal <- read_tsv(file = ""https://raw.githubusercontent.com/ada-lovecraft/ProcessingSketches/master/Bits%20and%20Pieces/Football_Stuff/data/nfl-salaries.tsv"")"
+"0",""
+"0",""

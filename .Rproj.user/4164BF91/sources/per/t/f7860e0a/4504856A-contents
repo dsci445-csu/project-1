@@ -1,0 +1,117 @@
+---
+title: "Lab 2: `ggplot2` and `tidyverse`"
+output:
+  pagedown::html_paged:
+    css: ["style/my-style-page.css", "default-fonts", "default-page", "default"]
+    self_contained: true
+    number_sections: true
+---
+
+## `ggplot2`
+
+1. Make a scatterplot of `cty` vs. `hwy` mpg using the `mpg` dataset.
+
+```{r}
+library(ggplot2)
+ggplot(data=mpg, mapping= aes(cty, hwy)) +
+  geom_point()
+
+```
+
+
+2. Describe the relationship that you see.
+I see a positive linear relationship between cty and hwy. 
+
+3. Map color and shape to type of drive the car is (see `?mpg` for details on the variables.). Do you see any patterns?
+
+
+```{r}
+?mpg
+ggplot(data=mpg, mapping= aes(cty, hwy)) +
+  geom_point(aes(color=drv, shape=drv))
+
+```
+
+
+The pattern I see are some clusters appearing, such as front wheel drive 
+appearing middle to top right of the graph, so it has both higher cty mpg
+and higher hwy mpg. While 4 wheel drive appears lower left, with lower
+cty mpg and hwy mpg. 
+
+4. Alter your plot from part 3. to make all the points be larger.
+
+```{r}
+ggplot(data=mpg) +
+  geom_point(mapping=aes(cty, hwy, colour=drv, shape=drv, size = 4))
+
+
+
+```
+
+
+    Using the `mpg` dataset,
+
+5. Make a histogram of `hwy`, faceted by `drv`.
+
+```{r}
+
+ggplot(data = mpg) +
+  geom_histogram(mapping = aes(hwy), bins = 30) +
+  facet_grid(~drv)
+
+```
+
+
+6. Make a scatterplot that incorporates color, shape, size, and facets.
+```{r}
+ggplot(data=mpg, mapping = aes(cty, hwy)) +
+  geom_point(aes(color=drv, shape=drv, size=4)) +
+  facet_wrap(~drv)
+
+
+```
+
+
+7. BONUS - Color your histograms from 1. by `cyl`. Did this do what you thought it would? (Look at `fill` and `group` as options instead).
+
+## `readr`
+
+1. Read the NFL salaries dataset from https://raw.githubusercontent.com/ada-lovecraft/ProcessingSketches/master/Bits%20and%20Pieces/Football_Stuff/data/nfl-salaries.tsv into `R`. 
+
+```{r}
+library(readr)
+nfl_sal <- read_tsv(file = "https://raw.githubusercontent.com/ada-lovecraft/ProcessingSketches/master/Bits%20and%20Pieces/Football_Stuff/data/nfl-salaries.tsv")
+
+
+```
+
+
+2. What is the highest NFL salary in this dataset? Who is the highest paid player?
+```{r}
+?filter
+spec(nfl_sal)
+```
+
+
+3. Make a histogram and describe the distribution of NFL salaries.
+
+## `dplyr`
+
+Using the NFL salaries from https://raw.githubusercontent.com/ada-lovecraft/ProcessingSketches/master/Bits%20and%20Pieces/Football_Stuff/data/nfl-salaries.tsv that you loaded into `R` in the section, perform the following.
+
+1. What is the team with the highest paid roster?
+
+2. What are the top 5 paid players?
+
+3. What is the highest paid position on average? the lowest? the most variable?
+
+## `tidyr`
+
+1. Is the NFL salaries from https://raw.githubusercontent.com/ada-lovecraft/ProcessingSketches/master/Bits%20and%20Pieces/Football_Stuff/data/nfl-salaries.tsv that you loaded into `R` in a previous your turn tidy? Why or why not?
+
+2. There is a data set in `tidyr` called `world_bank_pop` that contains information about population from the World Bank (https://data.worldbank.org/). Why is this data not tidy? You may want to read more about the data to answer (`?world_bank_pop`).
+
+3. Use functions in `tidyr` to turn this into a tidy form.
+
+
+

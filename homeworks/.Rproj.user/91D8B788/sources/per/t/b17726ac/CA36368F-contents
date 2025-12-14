@@ -1,0 +1,74 @@
+---
+title: "DSCI445 - Homework 1"
+author: "Your Name"
+output: pdf_document
+---
+
+Be sure to `set.seed(400)` at the beginning of your homework. 
+
+```{r}
+#reproducibility
+set.seed(400)
+```
+
+## R & ggplot2
+
+```{r}
+## load the data
+library(ggplot2)
+
+## take a look
+head(diamonds)
+
+#################################
+## Continue your analysis here ##
+#################################
+```
+
+
+## Regression
+
+```{r}
+## load the data
+library(MASS)
+
+## take a look
+head(Boston)
+```
+
+Start by visually inspecting the data to get an idea of relationships that might be present (**hint:** look into the `ggpairs` function in the `GGally` package.). Describe what you see.
+
+```{r}
+## from the hint
+library(GGally)
+
+## make plots and describe
+```
+
+Next fit linear models using the `lm()` function:
+
+(a) For each predictor fit a simple linear regression model to predict the response. Describe your results. In which of the models is there a statistically significant association between the predictor and the response?
+
+(b) Fit a multiple regression model to predict the response using all of the predictors. Describe your results (including diagnostic plots). For which predictors can we reject the null hypothesis $H_0: \beta_j = 0$?
+
+(c) How do your results from (a) compare to your results from (b)? Create a plot displaying the univariate regression coefficients from (a) on the $x$-axis and the multiple regression coefficients from (b) on the $y$-axis. That is, each predictor is displayed as a single point on the plot. Its coefficient in a simple linear regression model is shown as its $x$ coordinate and its coefficient in a multiple linear regression model is shown as its $y$ coordinate. Describe what you see.
+
+ 
+Turn in in a pdf of your analysis to canvas using the provided Rmd file as a template. Your Rmd file on the server will also be used in grading, so be sure they are identical.
+
+**Be sure to share your server project with the instructor and grader. You only need to do this once per semester.**
+
+1. Open your `homeworks` project on liberator.stat.colostate.edu
+2. Click the drop down on the project (top right side) > Share Project...
+    
+    ```{r, echo=FALSE, out.width="25%"}
+    knitr::include_graphics("share_project.png")
+    ```
+  
+3. Click the drop down and add "dsci445instructors" to your project.
+
+    ```{r, echo=FALSE, out.width="25%"}
+    knitr::include_graphics("share_dropdown.png")
+    ```
+
+This is how you **receive points** for reproducibility on your homework!

@@ -1,0 +1,8 @@
+"0",""
+"0","# Scenario B: Good Design (Low Density)"
+"0","# Where the lines diverge, data is valuable."
+"0","good_N <- 8"
+"0","# Calculate the ""True"" Type 2 value and add random noise"
+"0","good_point <- ((a * good_N * T_time) / (1 + a * Th * good_N)) + .35"
+"0",""
+"0","points(good_N, good_point, pch=19, col=""green4"", cex=1.5)"

@@ -1,0 +1,5 @@
+"0",""
+"0","# --- Answer to Question (f) ---"
+"0","# The optimal tree size corresponds to the highest cost_complexity parameter (cp) "
+"0","# that minimizes the CV misclassification error rate."
+"0","# The optimal tree size will be significantly smaller than the unpruned size (e.g., 8-12 terminal nodes)."

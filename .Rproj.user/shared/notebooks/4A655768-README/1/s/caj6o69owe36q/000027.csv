@@ -1,0 +1,5 @@
+"0",""
+"0","# Add Legend"
+"0","legend(""topright"", "
+"0","       legend = c(""Test MSE (Bias-Variance Trade-off)"", ""Training MSE (Always Decreases)""), "
+"0","       col = c(""red"", ""blue""), pch = c(19, 17), lty = 1)"

@@ -1,0 +1,9 @@
+"0","beta1_hat <- 10"
+"0","beta2_hat <- 0"
+"0",""
+"0","cat(sprintf(""Initial estimate for beta1_hat: %.1f\n"", beta1_hat))"
+"1","Initial estimate for beta1_hat: 10.0
+"
+"0","cat(sprintf(""Initial estimate for beta2_hat: %.1f\n"", beta2_hat))"
+"1","Initial estimate for beta2_hat: 0.0
+"
