@@ -116,7 +116,7 @@ Key Takeaways
 
 ## 
 
-```{r, echo=FALSE, out.width="40%", fig.align='center'}
+```{r, echo=FALSE, out.width="95%", fig.align='center'}
 knitr::include_graphics("Importance.png")
 ```
 
