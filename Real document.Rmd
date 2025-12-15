@@ -586,6 +586,7 @@ library(tidyverse)
 library(caret)
 library(dplyr)
 library(forcats)
+library(knitr)
 
 set.seed(445)
 
@@ -658,4 +659,120 @@ results_df <- data.frame(
 #Put it in a table
 kable(results_df, caption = "5 Fold Cross Validation Results for Logistic Regression Models")
 ```
+
+```{r}
+#Juliette added this part 
+
+library(tidyverse)
+library(caret)
+library(dplyr)
+library(forcats)
+library(knitr)
+
+set.seed(445)
+
+# --- 1. INITIAL TRAIN/TEST SPLIT (80% Train, 20% Test) ---
+
+
+df_clean <- df_clean %>%
+  mutate(across(where(is.character), as.factor))
+df_clean <- df_clean %>%
+  mutate(City = fct_lump(City, n = 10))
+
+#  (80% train, 20% test)
+train_indices <- createDataPartition(df_clean$Depression, p = 0.8, list = FALSE)
+train_data <- df_clean[train_indices, ]
+test_data  <- df_clean[-train_indices, ]
+
+# -2. CV TUNING (Using only the TRAIN data) 
+
+
+# Creating folds for cross validation using only the training data
+folds <- createFolds(train_data$Depression, k = 5, list = TRUE)
+accuracy_matrix <- matrix(NA, nrow = 5, ncol = 16)
+
+# Defining all 16 formulas for comparison
+formulas <- list(
+  Depression ~ `Gender`,
+  Depression ~ `Gender` + `Age`,
+  Depression ~ `Gender` + `Age` + `City`,
+  Depression ~ `Gender` + `Age` + `City` + `Academic Pressure`,
+  Depression ~ `Gender` + `Age` + `City` + `Academic Pressure` + `CGPA`,
+  Depression ~ `Gender` + `Age` + `City` + `Academic Pressure` + `CGPA` + `Study Satisfaction`,
+  Depression ~ `Gender` + `Age` + `City` + `Academic Pressure` + `CGPA` + `Study Satisfaction` + `Sleep Duration`,
+  Depression ~ `Gender` + `Age` + `City` + `Academic Pressure` + `CGPA` + `Study Satisfaction` + `Sleep Duration` + `Dietary Habits`,
+  Depression ~ `Gender` + `Age` + `City` + `Academic Pressure` + `CGPA` + `Study Satisfaction` + `Sleep Duration` + `Dietary Habits` + `Have you ever had suicidal thoughts ?`,
+  Depression ~ `Gender` + `Age` + `City` + `Academic Pressure` + `CGPA` + `Study Satisfaction` + `Sleep Duration` + `Dietary Habits` + `Have you ever had suicidal thoughts ?` + `Work/Study Hours`,
+  Depression ~ `Gender` + `Age` + `City` + `Academic Pressure` + `CGPA` + `Study Satisfaction` + `Sleep Duration` + `Dietary Habits` + `Have you ever had suicidal thoughts ?` + `Work/Study Hours` + `Financial Stress`,
+  Depression ~ `Gender` + `Age` + `City` + `Academic Pressure` + `CGPA` + `Study Satisfaction` + `Sleep Duration` + `Dietary Habits` + `Have you ever had suicidal thoughts ?` + `Work/Study Hours` + `Financial Stress` + `Family History of Mental Illness`,
+  Depression ~ `Gender` + `Age` + `City` + `Academic Pressure` + `CGPA` + `Study Satisfaction` + `Sleep Duration` + `Dietary Habits` + `Have you ever had suicidal thoughts ?` + `Work/Study Hours` + `Financial Stress` + `Family History of Mental Illness` + `Academic_Level`,
+  Depression ~ `Gender` + `Age` + `City` + `Academic Pressure` + `CGPA` + `Study Satisfaction` + `Sleep Duration` + `Dietary Habits` + `Have you ever had suicidal thoughts ?` + `Work/Study Hours` + `Financial Stress` + `Family History of Mental Illness` + `Academic_Level` + `Academic Pressure`:`Academic_Level`,
+  Depression ~ `Gender` + `Age` + `City` + `Academic Pressure` + `CGPA` + `Study Satisfaction` + `Sleep Duration` + `Dietary Habits` + `Have you ever had suicidal thoughts ?` + `Work/Study Hours` + `Financial Stress` + `Family History of Mental Illness` + `Academic_Level` + `Sleep Duration`:`Work/Study Hours`,
+  Depression ~ `Gender` + `Age` + `City` + `Academic Pressure` + `CGPA` + `Study Satisfaction` + `Sleep Duration` + `Dietary Habits` + `Have you ever had suicidal thoughts ?` + `Work/Study Hours` + `Financial Stress` + `Family History of Mental Illness` + `Academic_Level` + `Family History of Mental Illness`:`Have you ever had suicidal thoughts ?`
+)
+  
+
+# Fix factor levels and run CV loop (using train_data)
+train_data$City <- factor(train_data$City)
+for (i in 1:5) {
+  # Splitting the 80% training data into train/validation folds
+  test_indexes <- folds[[i]]
+  train_fold <- train_data[-test_indexes, ]
+  test_fold  <- train_data[test_indexes, ]
+
+  # Fixing missing values in Financial Stress
+  test_fold <- test_fold %>% drop_na(`Financial Stress`)
+
+  # Setting factor levels
+  factor_cols <- names(Filter(is.factor, train_fold))
+  for (col in factor_cols) {
+    test_fold[[col]] <- factor(test_fold[[col]], levels = levels(train_fold[[col]]))
+  }
+
+  # Looping through models
+  for (m in seq_along(formulas)) {
+    model <- glm(formulas[[m]], data = train_fold, family = 'binomial')
+    prob <- predict(model, test_fold, type = 'response')
+    pred <- ifelse(prob > 0.5, 1, 0)
+    accuracy_matrix[i, m] <- mean(pred == test_fold$Depression, na.rm = TRUE)
+  }
+}
+
+
+#3. FINAL TEST SET EVALUATION!!!
+
+# Train the best model (Model 13) on the entire 80% training set
+best_formula <- formulas[[13]] 
+final_logreg_model <- glm(best_formula, data = train_data, family = 'binomial')
+
+# Prepare the 20% test data for prediction
+# Fix factor levels that might be missing in test_data but present in train_data
+factor_cols_train <- names(Filter(is.factor, train_data))
+for (col in factor_cols_train) {
+    test_data[[col]] <- factor(test_data[[col]], levels = levels(train_data[[col]]))
+}
+test_data <- test_data %>% drop_na(`Financial Stress`)
+
+
+# Predict on the held-out 20% test set
+prob_test <- predict(final_logreg_model, test_data, type = 'response')
+pred_test <- ifelse(prob_test > 0.5, 1, 0)
+
+final_logreg_conf_matrix <- table(
+  Predicted = pred_test,
+  Actual = test_data$Depression
+)
+
+cat("Logistic Regression Test Set Confusion Matrix (Model 13):\n")
+print(final_logreg_conf_matrix)
+
+# 
+final_logreg_accuracy_check <- sum(diag(final_logreg_conf_matrix)) / sum(final_logreg_conf_matrix)
+cat("Test Set Accuracy:", final_logreg_accuracy_check, "\n")
+
+
+
+```
+
+
 

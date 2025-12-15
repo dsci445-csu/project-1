@@ -63,8 +63,9 @@ df_clean |>
 
 
 ```
-
+Testing for number of folds = 5
 ```{r}
+set.seed(445)
 #cross validation time 
 #first data split
 df_clean <- df_clean %>%
@@ -200,6 +201,47 @@ final_tuning_plot <- ggplot(plot_data, aes(x = log_penalty, y = mean)) +
 final_tuning_plot
 ```
 
+```{r}
+
+# Final evaluation on test data
+
+# 1. Apply the final trained workflow to the test data
+test_predictions <- predict(final_fit_results, new_data = test_data) |>
+  bind_cols(predict(final_fit_results, new_data = test_data, type = "prob")) |>
+  # 2. Add the true outcome variable for comparison
+  bind_cols(test_data |> select(Depression))
+
+# 3. Generate the Confusion Matrix
+conf_matrix <- conf_mat(test_predictions, truth = Depression, estimate = .pred_class)
+
+cat("## Confusion Matrix for LASSO Logistic Regression\n")
+print(conf_matrix)
+
+# 4. Calculate ALL Summary Classification Metrics
+metrics_summary <- conf_matrix |>
+  summary()
+
+# 5. Extract and print the overall Accuracy
+accuracy_value <- metrics_summary |>
+  dplyr::filter(.metric == "accuracy") |>
+  dplyr::pull(.estimate)
+
+cat("\nTest set accuracy:", round(accuracy_value, 4), "\n")
+
+
+# 6. Optional: Print other key metrics
+cat("\n## Other Key Classification Metrics\n")
+metrics_to_show <- metrics_summary |>
+  dplyr::filter(.metric %in% c("sensitivity", "specificity", "precision", "roc_auc")) |>
+  dplyr::select(.metric, .estimate)
+
+print(metrics_to_show)
+
+# Plot the Confusion Matrix
+library(ggplot2)
+autoplot(conf_matrix)
+```
+
 
 ```{r}
 final_coefs_tidy <- tidy(final_fit_results) %>%
@@ -208,8 +250,8 @@ final_coefs_tidy <- tidy(final_fit_results) %>%
 relevant_features <- nrow(final_coefs_tidy)
 
 # 2. Total predictors the model saw (The P after dummy encoding)
-# We use the previously calculated estimate of ~72 total features.
-total_predictors <- 68
+# We use the previously calculated estimate of ~67 total features.
+total_predictors <- 67
 
 # 3. Calculate the number of features set to zero (Dropped)
 dropped_features <- total_predictors - relevant_features
@@ -219,6 +261,9 @@ cat("-----------------------------------\n")
 cat("A. Features Retained (Non-Zero Coefficients): ", relevant_features, "\n")
 cat("B. Features Dropped (Set to Zero): ", dropped_features, "\n")
 ```
+
+
+
 
 
 

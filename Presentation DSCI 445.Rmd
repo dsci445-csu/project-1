@@ -89,12 +89,14 @@ knitr::include_graphics("images/LeahPlotting.png")
   2. **All 13 predictors + Interaction of Family History of Mental Illness x Have you ever had suicidal thoughts?** - Accuracy: **84.784%**
   3. **All 13 predictors + Interaction of Sleep Duration x Work/Study Hours** - Accuracy: **84.780%**
   
+##   
 * <span style="color:blue">**Conclusion**</span>
   - Best performing model was one with no interactions, and although adding they came close in terms of accuracy, they did not improve it much.
   
-```{r, echo=FALSE, out.width="40%", fig.align="center"}
+```{r, echo=FALSE, out.width="30%", fig.align="center"}
 knitr::include_graphics("images/LeahResults.png")
 ```
+Logistic Regression Test Set Accuracy: 0.8435484 
 
 
 ## The Results - Tanner
@@ -110,6 +112,7 @@ Key Takeaways
     - Age  
     - Study Hours  
 - **Cross-validation accuracy exceeded 83.5%**
+- **Test set accuracy: 83.35%**
 
 
 
@@ -136,7 +139,7 @@ For the accuracy check we used 5 - fold cross-validation.
 ```{r, echo=FALSE, out.width="40%", fig.align='center'}
 knitr::include_graphics("images/KNN_numeric.png")
 ```
-
+##
 k = 5 gives about 0.759 accuracy, k = 10 gives about 0.773.
 Since k = 10 is slightly better, we chose k = 10 for our final KNN model.
 
@@ -161,9 +164,12 @@ Overall, it gives us approximately 77% of accuracy
 
 ## KNN numerical + categorical
 
-After that, we also let KNN use the categorical information:
+After that, we also let KNN use the categorical information
+
 * we added categorical variable
+
 * turned these into dummy variables
+
 * used 5 fold cross-validation
 
 ## CV
@@ -181,8 +187,9 @@ To see what this means in terms of individual students, we again look at the con
 ```{r, echo=FALSE, out.width="40%", fig.align='center'}
 knitr::include_graphics("images/confusion_matrix_categorical.png")
 ```
+Test set accuracy: 82.7%
 
-##
+## Interpretation
 
 **Total students in this test set: 5,581**
 
@@ -204,8 +211,10 @@ so including these categorical variables makes the model more accurate than usin
 
 * Essentially, it is Logistic Regression with an added L1 regularization penalty.
 
+$$\text{Minimize} \left( \text{Negative Log-Likelihood} + \lambda \sum_{j=1}^{p} |\beta_j| \right)$$
+
 ##
-**The How**
+**How Lasso Was Prepared**
 
 * Transformed all categorical features into numeric dummy variables.
 
@@ -220,27 +229,59 @@ knitr::include_graphics("images/recipe.png")
 ##
 **Lasso Sparsity and Interpretability**
 
-* Optimal $\lambda$ Value Chosen: The final $\lambda$ was chosen to maximize cross-validated performance.
+* Optimal $\lambda$ Value Chosen: The final $\lambda$ of $.00174$ was chosen to maximize cross-validated performance.
 
-* Feature Selection: The model set 28 coefficients to zero (out of 68 total predictors) and resulted in a sparse final model with 40 relevant features.
+* Feature Selection: The model set 27 coefficients to zero (out of 67 total predictors) and resulted in a sparse final model with 40 relevant features.
 
 * Key Interpretive Takeaways (from Non-Zero Coefficients):
-** For every standard deviation increase in Academic Pressure, the odds of a student experiencing depression increase by over $\mathbf{200\%}$ (a factor of 3.06).
+* For every standard deviation increase in Academic Pressure, the odds of a student experiencing depression increase by over $\mathbf{200\%}$ (a factor of $3.03$).
 
-** For every one standard deviation increase in Study Satisfaction, the odds of experiencing depression decrease by about $27\%$.
+* For every one standard deviation increase in Study Satisfaction, the odds of experiencing depression decrease by about $25.8\%$ (a factor of $0.74$).
 
 
 ## 
 **Lasso Test Set Performance**
 
-* Test Set Accuracy: 84.2% 
+* Test Set Accuracy: 85.09% 
 * Confusion Matrix 
 
 
 ```{r, echo=FALSE, out.width="80%", fig.align='center'}
-knitr::include_graphics("images/Lasso Image.png")
+knitr::include_graphics("Lasso Confusion Matrix.png")
 ```
 
+##
+
+**Total students in this test set: 5,581**
+
+* 1,845 of 2,304 non-depressed students were correctly predicted as 0
+* 2,904 of 3,277 depressed students were correctly predicted as 1
+* 364 depressed students were missed (predicted as 0 instead of 1)
+* 468 non-depressed students were false alarms (predicted as 1 instead of 0)
 
 
 ## Slide 5: Conclusion
+* We compared Test Set Accuracy because it measures performance on completely unseen data, providing the most unbiased estimate of real-world model effectiveness.
+
+* Test set accuracy
+
+* Tanner RF: 83.35%
+
+* Juliette Lasso: <span style="color: blue"> **85%**  </span>
+
+* Munisa KNN: 82.7%
+
+* Leah Logistic Regression (model 13): 84.35%
+
+Best Test set accuracy: Lasso
+
+## Takeaways
+* The LASSO's <span style="color: blue"> **L1 regularization penalty was highly effective** </span>, leading it to outperform the simpler, unregularized Logistic Regression (85.00% vs. 84.35%) 
+* Lasso also outperformed the complex, harder-to-interpret models (RF and KNN). 
+* This demonstrates that  <span style="color: blue"> **sparsity and simplicity** </span>, along with a <span style="color: blue"> **linear structure** </span> , are the ideal fit for classifying student depression risk in this dataset.
+* Academic Pressure is the Primary Driver: The strongest factor driving depression risk is Academic Pressure. (The LASSO model confirmed that for every one standard deviation increase in Academic Pressure, the odds of a student experiencing depression increase by over $200\%$ (a factor of $3.03$).)
+
+
+
+
+
