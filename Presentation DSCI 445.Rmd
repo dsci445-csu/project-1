@@ -114,7 +114,11 @@ Key Takeaways
 - **Cross-validation accuracy exceeded 83.5%**
 - **Test set accuracy: 83.35%**
 
+## 
 
+```{r, echo=FALSE, out.width="40%", fig.align='center'}
+knitr::include_graphics("Importance.png")
+```
 
 ## K-nearest neighbors
 
