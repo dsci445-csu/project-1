@@ -53,9 +53,11 @@ Logistic Regression, K Nearest Neighbors, Lasso and Random Forest
   - Created boxplots to visualize interactions between categorical and numeric predictors
   - Created histograms to visualize distributions of numeric predictors
   
-* <span style="color:blue">**Results of plots**</span>
+* <span style="color:blue">**Key Takeaways of plots**</span>
   - Higher financial stress among students who reported "yes" to having suicidal thoughts
   - Most students were under the age of 35, identified as men, and were pursuing undergraduate degrees
+  
+## Example Plots
   
 ```{r, echo=FALSE, out.width="40%", fig.align="center"}
 knitr::include_graphics("images/LeahPlotting.png")
@@ -96,6 +98,7 @@ knitr::include_graphics("images/LeahPlotting.png")
 ```{r, echo=FALSE, out.width="30%", fig.align="center"}
 knitr::include_graphics("images/LeahResults.png")
 ```
+
 Logistic Regression Test Set Accuracy: 0.8435484 
 
 
