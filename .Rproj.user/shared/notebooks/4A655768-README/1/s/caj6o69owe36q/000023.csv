@@ -1,3 +1,0 @@
-"0",""
-"0","# Add the Training MSE line"
-"0","lines(plot_df_train$p, plot_df_train$MSE, type = ""b"", pch = 17, col = ""blue"")"

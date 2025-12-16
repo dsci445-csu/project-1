@@ -1,7 +1,0 @@
-"0","library(ISLR)"
-"0","library(tidyverse) "
-"0","library(knitr)"
-"0","library(tidymodels)"
-"0",""
-"0","head(Auto) %>%"
-"0","  kable()"

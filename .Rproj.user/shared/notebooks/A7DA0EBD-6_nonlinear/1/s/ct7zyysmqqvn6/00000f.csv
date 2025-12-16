@@ -1,9 +1,0 @@
-"0","linear_spec <- linear_reg()"
-"0",""
-"0","## automatically chosen knots"
-"0","spline_rec <- recipe(y ~ x, data = df) |>"
-"0","  step_bs(degree = 3, deg_free = 6) ## cubic spline with 2 knots & intercept"
-"1","[1m[33mError[39m in `recipe()`:[22m
-[38;5;232m[33m![38;5;232m `data` must be a data frame, matrix, or sparse matrix, not a function.[39m
-[90mRun `]8;;x-r-run:rlang::last_trace()rlang::last_trace()]8;;` to see where the error occurred.[39m
-"

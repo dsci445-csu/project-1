@@ -1,3 +1,0 @@
-"0","boost_spec <- boost_tree(trees = 5000, tree_depth = 4) %>%"
-"0","  set_engine(""xgboost"") %>%"
-"0","  set_mode(""classification"")"

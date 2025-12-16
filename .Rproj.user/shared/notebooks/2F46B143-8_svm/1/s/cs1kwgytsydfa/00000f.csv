@@ -1,6 +1,0 @@
-"0","library(tidyverse) ## data manipulation"
-"0","library(tidymodels) ## models"
-"0","library(knitr) ## tables"
-"0",""
-"0","## reproducible"
-"0","set.seed(445)"
