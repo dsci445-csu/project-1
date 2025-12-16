@@ -50,7 +50,7 @@ rf_data$Depression <- as.factor(rf_data$Depression)
 
 set.seed(445)
 n <- nrow(rf_data)
-train_idx <- sample(1:n, size = floor(0.7 * n))
+train_idx <- sample(1:n, size = floor(0.8 * n))
 train <- rf_data[train_idx, ]
 test  <- rf_data[-train_idx, ]
 
@@ -80,6 +80,17 @@ library(randomForest)
 library(caret)
 
 df <- read.csv("student_depression_dataset.csv")
+
+set.seed(445)
+
+train_index <- createDataPartition(
+  rf_data$Depression,
+  p = 0.8,
+  list = FALSE
+)
+
+train_data <- rf_data[train_index, ]
+test_data  <- rf_data[-train_index, ]
 
 rf_data <- df[, c(
   "Age",
@@ -126,8 +137,17 @@ plot(rf_cv_model)
 
 varImp(rf_cv_model)
 plot(varImp(rf_cv_model))
-```
 
+test_pred <- predict(rf_cv_model, newdata = test_data)
+
+conf_mat <- table(
+  Actual = test_data$Depression,
+  Predicted = test_pred
+)
+conf_mat
+
+```
+4,993/ 5580 = 89.48 % accuracy
 
 ```{r}
 
