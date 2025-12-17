@@ -59,8 +59,8 @@ Logistic Regression, K Nearest Neighbors, Lasso and Random Forest
   
 ## Example Plots
   
-```{r, echo=FALSE, out.width="40%", fig.align="center"}
-knitr::include_graphics("images/LeahPlotting.png")
+```{r, echo=FALSE, out.width="80%", fig.align="center"}
+knitr::include_graphics("images/LeahPlottingNew.png")
 ```
 
 
