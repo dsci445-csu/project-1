@@ -6,6 +6,7 @@ output: html_document
 ---
 ```{r}
 
+student_depression_dataset <- read.csv("student_depression_dataset.csv")
 
 student_depression_dataset$id <- NULL
 student_depression_dataset$`Work Pressure` <- NULL
