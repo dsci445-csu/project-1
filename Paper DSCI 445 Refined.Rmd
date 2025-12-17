@@ -68,7 +68,7 @@ The KNN algorithm, a non-parametric instance-based classifier, was included to p
 ## Test Set Accuracy
 The final test set scores for each model is as follows:
 
-* Tanner RF: 
+* Tanner RF: 89.48%
 
 * Juliette Lasso: 85%
 
