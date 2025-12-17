@@ -1,0 +1,72 @@
+---
+title: "Paper DSCI 445 Project"
+author: "Juliette Dashe, Tanner Halopoff, Munisa Yaqub, Leah Cordova"
+date: "`r Sys.Date()`"
+output: 
+  pdf_document:
+    number_sections: true
+    toc: true
+  html_document:
+    theme: journal
+---
+
+# Motivation
+
+Mental health among university students represents a critical public health concern globally. With increasing academic, social, and financial pressures, students face a significant risk of developing mental health issues, with depression being one of the most prevalent conditions. Early and accurate detection of at-risk students is vital for providing timely intervention, but traditional screening methods can be resource-intensive and often miss subclinical cases.
+
+## Research Question and Data
+This study addresses the need for scalable and accurate early detection tools by employing machine learning classification models to predict the presence of depression in a student population. We utilized a publicly available Kaggle dataset that captures various student life factors, including Academic Pressure, Cumulative GPA (CGPA), Study Satisfaction, Sleep Duration, and Financial Stress. The goal is to determine which of these common student experience factors are the most significant predictors of depression.
+
+## Project's Objective
+The primary objective of this project is to compare the predictive accuracy and interpretability of four distinct machine learning algorithms, Logistic Regression, LASSO-Regularized Logistic Regression, K-Nearest Neighbors (KNN), and Random Forest (RF), on this binary classification task. By benchmarking models ranging from simple linear approaches (Logistic Regression) to complex ensemble methods (Random Forest), we aim to identify the most robust, accurate, and practically deployable model. The final selected model must not only demonstrate high performance on unseen data but also provide actionable, interpretable insights to inform mental health support programs.
+
+# Methodology 
+
+## Data Preparation and Cleaning
+The project began with standardized data preparation. Initial cleaning involved removing irrelevant or redundant columns (e.g., Student ID, Work Pressure, Job Pressure) which contained no variance or excessive missing values. The target variable, Depression (0/1), was confirmed to be a binary factor. To manage high-cardinality nominal predictors:
+
+Academic Level: The various degree programs were consolidated into four primary categories: High school, Undergraduate, Masters, and PhD.
+City: The City variable was processed using the fct_lump(n=10) method, consolidating cities with low frequency into a single "Other" factor level. This reduced feature instability and complexity for the linear models.
+
+## Experimental Design and Evaluation
+The entire dataset was partitioned into a Training Set (80%) and a permanently Held-Out Test Set (20%) using a stratified sampling approach to ensure the target variable distribution was preserved in both sets. All model tuning and cross-validation were conducted exclusively on the Training Set, and a consistent seed of set.seed(445) was used.
+Model Selection: All models were tuned using a consistent 5-fold Cross-Validation (CV) or 10-fold CV procedure on the Training Set to select the optimal hyperparameters (e.g., $k$ for KNN, $\lambda$ for LASSO).
+Final Evaluation: The accuracy of the final, tuned models (LASSO, KNN, RF, and Logistic Regression) was determined using the Test Set Accuracy, providing an unbiased comparison of generalization performance on unseen data.
+
+## Logistic Regression (Unregularized)
+A standard, unregularized Logistic Regression model was developed to serve as the baseline for the linear models. Model selection was performed by fitting 16 distinct models, incrementally adding predictors from a single feature up to the full set of 13 base predictors, followed by three models testing intuitive interaction terms (e.g., Sleep Duration * Work/Study Hours). The 5-fold CV process identified Model 13 (the full model with 13 base predictors) as having the highest average CV accuracy (0.84791). This model was selected for final Test Set evaluation.
+
+## LASSO-Regularized Logistic Regression
+To enhance the performance and interpretability of the linear model, LASSO (L1 Regularization) was implemented. The LASSO model simultaneously performs shrinkage and automatic feature selection by penalizing the magnitude of the coefficients ($\beta_j$). The optimal regularization strength, $\lambda$, was determined via 5-fold cross-validation. The final model exhibited high sparsity, setting 27 of the initial features to zero, thus retaining only the most predictive variables for evaluation. The Lambda value of .00174 was chosen after the rigorous CV methods deployed. 
+
+## Random Forest (RF)
+The Random Forest ensemble method was included as a non-linear classifier to capture potential complex interactions not evident in the linear models. The model was initialized with 500 decision trees to balance predictive performance against runtime. Hyperparameters, including the number of variables randomly sampled as candidates at each split (mtry), were tuned via 5-fold CV. Following tuning, the model's global Variable Importance was assessed using the Mean Decrease in Accuracy metric.
+
+## K-Nearest Neighbors (KNN)
+The KNN algorithm, a non-parametric instance-based classifier, was included to provide a crucial baseline. The model classifies a student based on the majority vote of the $k$ most similar students in the training set. Initial tests were performed using only numeric predictors, followed by a second run incorporating all categorical predictors (transformed into dummy variables). The hyperparameter $k$ was tuned via 5-fold CV, with the final model being set to $k=10$.
+
+#Results
+
+## Key Findings
+ One of our key findings was that for every one standard deviation increase in Academic Pressure, the odds of a student experiencing depression increase by over $200\%$ (a factor of $3.03$).)
+ 
+## Test Set Accuracy
+The final test set scores for each model is as follows:
+
+* Tanner RF: 
+
+* Juliette Lasso: 85%
+
+* Munisa KNN: 82.7%
+
+* Leah Logistic Regression (model 13): 84.35%
+
+This result is distinct from the original best model being Lasso, as previously the Random Forest Cross Validation was being run with a 70% training 30% test split. This final score now reports the test set accuracy score using the consistent (80/20) split across all models.
+
+## Discussion
+The high RF score suggests that the relationship between predictors and depression does involve complex interactions (e.g., high Academic Pressure only matters when Sleep Duration is low) that the other models could not capture as well as random forest. 
+
+# References
+Adil Shamim, Student Depression Dataset, kaggle.com
+
+
