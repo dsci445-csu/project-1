@@ -117,7 +117,8 @@ Key Takeaways
 - 
 - **Test set accuracy: 89.48%**
 - This accuracy improved because of adjustments made after the presentation
-## 
+
+## Random Forest Importance
 
 ```{r, echo=FALSE, out.width="95%", fig.align='center'}
 knitr::include_graphics("Importance.png")
