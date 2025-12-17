@@ -39,13 +39,15 @@ Prior to model fitting, exploratory data analysis was conducted to examine distr
 ```{r, echo=FALSE, out.width="80%", fig.align="center"}
 knitr::include_graphics("images/LeahPlottingNew.png")
 ```
+Figure 1. Example exploratory plots showing relationship between Financial Stress and Suicidal Thoughts, Academic Level distribution, and Gender distribution.
 
 ## Logistic Regression (Unregularized)
 A standard, unregularized Logistic Regression model was developed to serve as the baseline for the linear models. Model selection was performed by fitting 16 distinct models, incrementally adding predictors from a single feature up to the full set of 13 base predictors, followed by three models testing intuitive interaction terms (e.g., Sleep Duration * Work/Study Hours). The 5-fold CV process identified Model 13 (the full model with 13 base predictors) as having the highest average CV accuracy (0.84791). This model was selected for final Test Set evaluation.
 
-```{r, echo=FALSE, out.width="30%", fig.align="center"}
+```{r, echo=FALSE, out.width="40%", fig.align="center"}
 knitr::include_graphics("images/LeahResults.png")
 ```
+Table 1. Cross validation accuracy for 16 logistic regression models, highlighting that Model 13, with all 13 predictors and no interaction terms, achieved the highest mean accuracy.
 
 ## LASSO-Regularized Logistic Regression
 Prior to fitting the linear models, a data recipe was applied to ensure the model prerequisites were met. This process included Dummy Encoding of all categorical predictors (e.g., Gender, Academic Level) to convert them into a set of binary (0/1) features compatible with the Logistic Regression equation. Furthermore, all numeric predictors were normalized (scaled) to have a mean of zero and a standard deviation of one. This step was critical for the LASSO model to ensure the L1 regularization penalty was applied equally and fairly across all predictors, preventing bias in feature selection based solely on variable scale.
@@ -72,7 +74,7 @@ The final test set scores for each model is as follows:
 
 * Munisa KNN: 82.7%
 
-* Leah Logistic Regression (model 13): 84.35%
+* Leah Logistic Regression (Model 13): 84.35%
 
 This result is distinct from the original best model being Lasso, as previously the Random Forest Cross Validation was being run with a 70% training 30% test split. This final score now reports the test set accuracy score using the consistent (80/20) split across all models.
 
