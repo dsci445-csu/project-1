@@ -114,9 +114,9 @@ Key Takeaways
     - Academic Pressure  
     - Age  
     - Study Hours  
-- **Cross-validation accuracy exceeded 83.5%**
-- **Test set accuracy: 83.35%**
-
+- 
+- **Test set accuracy: 89.48%**
+- This accuracy improved because of adjustments made after the presentation
 ## 
 
 ```{r, echo=FALSE, out.width="95%", fig.align='center'}

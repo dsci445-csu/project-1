@@ -16,15 +16,18 @@ library(ggplot2)
 
 ```
 RF
-So far after doing some base set up and coding, like loading in my packages which were the randomForest and dplyr, we all begin cleaning the data which had some similarities and also caused us to branch off at certain points because certain models required their own niche cleaning and set up. I just made sure that all invalid rows were removed and everything was set up as a factor if applicable.
+After doing some base set up and coding, like loading in my packages which were the randomForest and dplyr, we all begin cleaning the data which had some similarities and also caused us to branch off at certain points because certain models required their own niche cleaning and set up. I just made sure that all invalid rows were removed and everything was set up as a factor if applicable.
 
-Then after setting the seed and partitioning the dat it was time to set up the random forest model itself. I did some research and looked at notes before coming to the conclusion that 500 trees would be the best because it is difficult to over fit with this model, yet with runtimes being extensive, 500 is a sweet spot.
+Then after setting the seed and partitioning the data it was time to set up the random forest model itself. I did some research and looked at notes before coming to the conclusion that 500 trees would be the best because it is difficult to over fit with this model, yet with runtimes being extensive, 500 is a sweet spot.
 
-5 fold cross validation was taking a lot of time to run and I am still dialing it in along with the relevant plots. 
+5 fold cross validation was taking a lot of time to run and I am still dialing it in along with the relevant plots. It turns out that my code is taking so long to run because when you think about it it is doing 5 fold cross validation mixed with tuning the amount of random variables that are being considered at each branch, and also working with 500 trees per model means that I am fitting 20 random forest and around 10,000 splits. I think it was worth the run time because a lot of my tuning was done it the building of one model and this lead to me seeing the most accurate number of variables considered at each split because of the 5 fold cross validation showing which model lead to the best accuracy. 
 
-What I have done with the training and test split is obtain the accuracy of my prediction based on the one split that I did. This resulted in 83.3% success in predicting an individual's factor of depressed or not. 
+What I have done with the training and test split is obtain the accuracy of my prediction based on the one split that I did. This resulted in 89.48% success in predicting an individual's factor of depressed or not. And to my surprise, increasing the mtry parameter which is the number of variables randomly considered at each split turned down the accuracy when tested.
 
-A large part of random forest is also to see the importance of the variables and we can run just a couple of tweaks to get a mean decrease in prediction accuracy when a variable is removed and therefore we see home large of a contributor to success it was. Next I will do this with 5 fold cross validation to see some more certainty and repetition.
+A large part of random forest is also to see the importance of the variables and we can run just a couple of tweaks to get a mean decrease in prediction accuracy when a variable is removed and therefore we see how large of a contributor to success it was. In this case it was clear that the graph showed that suicidal thoughts was the most influential predictor, because I think that most people who are having suicidal thoughts would also say that they are experiencing depression. It almost feels like having depressionis more of a predictor for if one is having suicidal thoughts. Moving past that variable because of the discretion, we see that academic pressure, age, and study hours are the next most important variables as deemed by the model. After these predictors on the list we see many predictors having to do with financial stress. 
+
+It is fascinating that the model finds that those first three variables have a bigger role in predicting depression because often depression can come from where we place the most emphasis and have high expectations and sometimes burn out. This is interested because we know that so many students have a financial burden placed on them, but it seems that the main pressure that they place on themselves is the actual academics and performance itself rather than how the are able to afford it or be there. This is noteworthy to look into and brings some positivity and light to the situation.
+
 
 
 # Motivation
