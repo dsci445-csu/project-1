@@ -58,9 +58,20 @@ To enhance the performance and interpretability of the linear model, LASSO (L1 R
 The Random Forest ensemble method was included as a non-linear classifier to capture potential complex interactions not evident in the linear models. The model was initialized with 500 decision trees to balance predictive performance against runtime. Hyperparameters, including the number of variables randomly sampled as candidates at each split (mtry), were tuned via 5-fold CV. Following tuning, the model's global Variable Importance was assessed using the Mean Decrease in Accuracy metric.
 
 ## K-Nearest Neighbors (KNN)
-The KNN algorithm, a non-parametric instance-based classifier, was included to provide a crucial baseline. The model classifies a student based on the majority vote of the $k$ most similar students in the training set. Initial tests were performed using only numeric predictors, followed by a second run incorporating all categorical predictors (transformed into dummy variables). The hyperparameter $k$ was tuned via 5-fold CV, with the final model being set to $k=10$.
 
-#Results
+K-Nearest Neighbors (KNN) is a distance-based classifier that assigns a class label using the majority vote among the $k$ closest training observations (Euclidean distance). Because KNN relies on distances, all predictors must be numeric and on comparable scales.
+
+KNN was evaluated in two stages. First, a **numeric-only baseline** was fit using Age, Academic Pressure, Work Pressure, CGPA, Study Satisfaction, Job Satisfaction, Work/Study Hours, and Financial Stress. This baseline selected $k=10$ via 5-fold cross-validation (CV accuracy $=0.7747$) and achieved test accuracy $=0.7702$.
+
+For the final KNN model reported in the Results section, **numeric and categorical predictors** were used by converting categorical variables (Gender, Sleep Duration, Dietary Habits, Suicidal Thoughts, and Family History of Mental Illness) into dummy variables using `model.matrix(...)` (intercept removed). The hyperparameter $k \in \{5,10\}$ was tuned with **5-fold cross-validation**, and **fold-specific standardization** was applied (means and standard deviations computed on the fold training subset and applied to the fold validation subset). The best model was $k=10$ (CV accuracy $=0.8263$). On the held-out test set, this model achieved **test accuracy $=0.8271$ (82.7%)** with confusion matrix counts TN = 1699, FP = 605, FN = 360, and TP = 2917.
+
+```{r, echo=FALSE, out.width="40%", fig.align='center'}
+knitr::include_graphics("images/KNN_numeric.png")
+```
+
+```{r, echo=FALSE, out.width="40%", fig.align='center'}
+knitr::include_graphics("images/KNN_numeric_Categorical.png")
+```
 
 ## Key Findings
  One of our key findings was that for every one standard deviation increase in Academic Pressure, the odds of a student experiencing depression increase by over $200\%$ (a factor of $3.03$).)
