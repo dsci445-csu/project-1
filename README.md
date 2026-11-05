@@ -1,5 +1,4 @@
 # project-1
-<<<<<<< HEAD
 Group 1 Project for DSCI445 @ CSU
 =======
 Group 1 Project for DSCI445 @ CSU
