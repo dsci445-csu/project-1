@@ -1,5 +1,13 @@
 ---
-title: "team"
-output: html_document
+title: "NFL Team Analysis"
+output: pdf_document
 ---
+
+```{r}
+
+install.packages("nflreadr")
+library(nflreadr)
+
+```
+
 
