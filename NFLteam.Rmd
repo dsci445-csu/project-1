@@ -13,10 +13,20 @@ library(dplyr)
 team_data <- load_team_stats(seasons = 1999:2025)
 head(team_data)
 
+
+
 ```
 #Goal: predict the Superbowl outcome in 2027 using all of the past data in the nflreadr data set
+#ML methods: KNN, linear/logistic regression\MLR, LDA/QDA, polynomial, splines, GAM, trees
+#Feature selection methods: subset selection, ridge, LASSO, tuning, PCR, PLS
 #Steps:
 #Build my own data frame from main dataset pick columns I need
 #Clean/standardize data
+
+#Talk with team:
+#1) what kind of model are you guys using? categorical response with Y/N win superbowl as outcome? 
+#2) I think i am going to predict individual playoff game outcomes. Each observation represents a matchup between two teams. Response variable is whether Team A wins (1) or loses (0). Use the model to predict playoff games and work through the bracket until I reach the Super Bowl. Using one model, do a new input for each game in the playoffs and manually build my playoff bracket. 
+#3) Training: 1999-2018, validation: 2019-2022, testing: 2023-2025, prediction: 2026
+#4) Use regular-season team statistics ONLY for predictors (statistics that were available before the game being predicted). 
 
 
