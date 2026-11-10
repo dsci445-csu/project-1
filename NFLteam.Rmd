@@ -5,9 +5,18 @@ output: pdf_document
 
 ```{r}
 
+#Load all data
 install.packages("nflreadr")
 library(nflreadr)
+#Availible functions in package: load_pbp(), load_player_stats(), load_rosters(), load_schedules(), load_teams()
+library(dplyr)
+team_data <- load_team_stats(seasons = 1999:2025)
+head(team_data)
 
 ```
+#Goal: predict the Superbowl outcome in 2027 using all of the past data in the nflreadr data set
+#Steps:
+#Build my own data frame from main dataset pick columns I need
+#Clean/standardize data
 
 
