@@ -5,7 +5,66 @@ date: "2026-11-05"
 ---
 
 ```{r setup, include=FALSE}
-
-
+# install.packages(c("nflreadr", "tidyverse"))
+library(nflreadr)
+library(tidyverse)
+library(tidymodels)
 ```
+
+```{r data, cache = TRUE} 
+seasons <- 2009:2026   # injuries data starts in 2009
+
+player_stats <- load_player_stats(seasons)   # weekly player stats
+rosters      <- load_rosters(seasons)
+injuries     <- load_injuries(seasons)
+
+glimpse(player_stats)
+glimpse(rosters)
+glimpse(injuries)
+```
+
+```{r}
+
+stat_cols <- c("attempts", "sacks_suffered", "passing_epa",
+               "carries", "rushing_yards", "rushing_epa",
+               "targets", "receptions", "receiving_yards", "receiving_epa",
+               "def_sacks", "def_qb_hits", "def_tackles_for_loss",
+               "def_interceptions", "def_pass_defended", "def_fumbles_forced",
+               "def_tackles_solo", "penalties", "fumbles_lost_total",
+               "fg_made", "fg_att")
+
+ps <- player_stats |>
+  filter(season_type == "REG") |>
+  mutate(team = clean_team_abbrs(team))
+
+pos_week <- ps |>
+  filter(position_group %in% c("QB", "RB", "WR", "TE", "OL", "DL", "LB", "DB", "SPEC")) |>
+  group_by(season, week, team, position_group) |>
+  summarise(across(all_of(stat_cols), ~ sum(.x, na.rm = TRUE)), .groups = "drop") |>
+  pivot_wider(names_from = position_group,
+              values_from = all_of(stat_cols),
+              names_glue = "{position_group}_{.value}",
+              values_fill = 0) |>
+  select(where(~ !is.numeric(.x) || sd(.x, na.rm = TRUE) > 0))
+
+inj_pos <- injuries |>
+  filter(game_type == "REG") |>
+  mutate(team = clean_team_abbrs(team),
+         out = report_status %in% c("Out", "Doubtful"),
+         position_group = case_when(
+           position == "QB" ~ "QB",
+           position %in% c("RB", "FB") ~ "RB",
+           position == "WR" ~ "WR",
+           position == "TE" ~ "TE",
+           position %in% c("T", "G", "C", "OT", "OG", "OL") ~ "OL",
+           position %in% c("DE", "DT", "NT", "DL") ~ "DL",
+           position %in% c("LB", "ILB", "OLB", "MLB") ~ "LB",
+           position %in% c("CB", "S", "FS", "SS", "DB") ~ "DB",
+           TRUE ~ "SPEC")) |>
+  filter(out) |>
+  count(season, week, team, position_group, name = "n") |>
+  pivot_wider(names_from = position_group, values_from = n,
+              names_prefix = "out_", values_fill = 0)
+```
+
 
